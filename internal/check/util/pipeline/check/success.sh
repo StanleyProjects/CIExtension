@@ -16,3 +16,5 @@ fi
  'echo a' \
  'echo b' \
  'echo c'
+
+exit 1 # todo env
