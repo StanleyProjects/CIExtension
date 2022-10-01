@@ -31,6 +31,7 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   echo "Query option is empty!"; exit 101
  fi
  case "$JSON_QUERY_OPTION" in
+  -ss) JSON_OPTION="select((.!=null)and(type==\"string\"))";;
   -sfs) JSON_OPTION="select((.!=null)and(type==\"string\")and(.!=\"\"))";;
   -si) JSON_OPTION="select((.!=null)and(type==\"number\"))";;
   -sb) JSON_OPTION="select((.!=null)and(type==\"boolean\"))";;
@@ -70,6 +71,7 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
  fi
  if test $JSON_CODE -ne 0; then
   echo "Query option: \"$JSON_QUERY_OPTION\""
+  echo "Query: \"$JSON_QUERY\""
   echo "Variable: \"$JSON_VARIABLE\""
   case "$JSON_SOURCE_OPTION" in
    -j | --json) echo "Parse json error!"; exit 41;;

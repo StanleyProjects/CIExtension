@@ -6,6 +6,6 @@ copy ex/util/json ex/util/json
 copy internal/check/util/foo/sample.json .
 copy internal/check/util/foo/check check
 
-run check/success/file.sh
-run check/success/json.sh
+# run check/success/file.sh
+# run check/success/json.sh
 run check/error.sh

@@ -8,12 +8,14 @@ fi
 
 . ex/util/json -f "$FILE" \
  -si .val_int VAL_INT \
+ -ss .val_string_empty VAL_STRING_EMPTY \
  -sfs .val_string VAL_STRING \
  -sb .val_boolean_true VAL_BOOLEAN_TRUE \
  -sb .val_boolean_false VAL_BOOLEAN_FALSE
 
 ARRAY=(
  'val_int' '42' "$VAL_INT"
+ 'val_string_empty' '' "$VAL_STRING_EMPTY"
  'val_string' 'foo' "$VAL_STRING"
  'val_boolean_true' 'true' "$VAL_BOOLEAN_TRUE"
  'val_boolean_false' 'false' "$VAL_BOOLEAN_FALSE"
