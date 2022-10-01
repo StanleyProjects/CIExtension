@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if test $# -ne 2; then
+ echo "Script needs for 2 argument, but actual is $#!"; exit 11
+fi
+
+THROW_CODE="$1"
+THROW_MESSAGE="$2"
+
+for REQUIRE_ARGUMENT in THROW_CODE THROW_MESSAGE
+ do if test -z "${!REQUIRE_ARGUMENT}"; then
+  echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 12; fi done
+
+if [[ "$THROW_CODE" =~ ^[1-9][0-9]* ]]; then
+ echo "$THROW_MESSAGE"
+ exit $THROW_CODE
+fi
+
+echo "Code format error \"$THROW_CODE\"!"; exit 31
