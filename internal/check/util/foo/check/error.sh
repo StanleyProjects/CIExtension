@@ -102,99 +102,81 @@ if test $ACTUAL -ne $EXPECTED; then
  exit 53
 fi
 
-echo "
-Check query options..."
+SOURCES=(
+ '-f' "$FILE"
+ '-j' "$SOURCE"
+)
+for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
+ SOURCE_OPTION="${SOURCES[$((SOURCE_INDEX * 2 + 0))]}"
+ SOURCE="${SOURCES[$((SOURCE_INDEX * 2 + 1))]}"
 
-EXPECTED=101
-ACTUAL=0
-ex/util/json -f "$FILE" '' 2 3; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 161
-fi
-ACTUAL=0
-ex/util/json -j "$SOURCE" '' 2 3; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 261
-fi
+ echo "Source option: $SOURCE_OPTION"
 
-EXPECTED=21
-ARRAY=('a' '-a' 'foo' '1')
-for ((i=0; i<${#ARRAY[@]}; i++)); do
- ACTUAL=0
- ex/util/json -f "$FILE" "${ARRAY[$i]}" 2 3; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((170+i))
- fi
- ACTUAL=0
- ex/util/json -j "$SOURCE" "${ARRAY[$i]}" 2 3; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((270+i))
- fi
-done
+ echo "
+ Check query options..."
 
-echo "
-Check queries..."
-
-ARRAY=('a' '-a' 'foo'
- '.val_boolean_true'
- '.val_boolean_false'
- '.val_string'
- '.val_string_empty'
- '.val_object'
- '.val_array_2'
- '.val_array_empty'
- '.val_null')
-for ((i=0; i<${#ARRAY[@]}; i++)); do
- EXPECTED=42
- ACTUAL=0
- ex/util/json -f "$FILE" -si "${ARRAY[$i]}" 3; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((180+i))
- fi
- EXPECTED=41
- ACTUAL=0
- ex/util/json -j "$SOURCE" -si "${ARRAY[$i]}" 3; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((280+i))
- fi
-done
-
-echo "
-Check query errors..."
-
-ARRAY=('' '-si .val_int VAL_INT')
-for ((i=0; i<${#ARRAY[@]}; i++)); do
- SOURCES=(
-  '-f' "$FILE"
-  '-j' "$SOURCE"
- )
- for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
-  EXPECTED=101
+ EXPECTED=21
+ QUERIES=('a' '-a' 'foo' '1')
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
   ACTUAL=0
-  ex/util/json ${SOURCES[$((j * 2 + 0))]} "${SOURCES[$((j * 2 + 1))]}" ${ARRAY[$i]} '' 2 3; ACTUAL=$?
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} 2 3; ACTUAL=$?
   if test $ACTUAL -ne $EXPECTED; then
    echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-   exit $((1000 * j + 610 + i))
+   exit $((1000 * SOURCE_INDEX + 110 + QUERY_INDEX))
+  fi
+ done
+
+ echo "
+ Check queries..."
+
+ QUERIES=('a' '-a' 'foo'
+  '.val_boolean_true'
+  '.val_boolean_false'
+  '.val_string'
+  '.val_string_empty'
+  '.val_object'
+  '.val_array_2'
+  '.val_array_empty'
+  '.val_null')
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) exit 1;; # todo
+  esac
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" -si "${QUERIES[$QUERY_INDEX]}" 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 120 + QUERY_INDEX))
+  fi
+ done
+
+ echo "
+ Check query errors..."
+
+ QUERIES=('' '-si .val_int VAL_INT')
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  EXPECTED=101
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} '' 2 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 610 + QUERY_INDEX))
   fi
   EXPECTED=102
   ACTUAL=0
-  ex/util/json ${SOURCES[$((j * 2 + 0))]} "${SOURCES[$((j * 2 + 1))]}" ${ARRAY[$i]} -si '' 3; ACTUAL=$?
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} -si '' 3; ACTUAL=$?
   if test $ACTUAL -ne $EXPECTED; then
    echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-   exit $((1000 * j + 620 + i))
+   exit $((1000 * SOURCE_INDEX + 620 + QUERY_INDEX))
   fi
   EXPECTED=103
   ACTUAL=0
-  ex/util/json ${SOURCES[$((j * 2 + 0))]} "${SOURCES[$((j * 2 + 1))]}" ${ARRAY[$i]} -si 2 ''; ACTUAL=$?
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} -si 2 ''; ACTUAL=$?
   if test $ACTUAL -ne $EXPECTED; then
    echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-   exit $((1000 * j + 630 + i))
+   exit $((1000 * SOURCE_INDEX + 630 + QUERY_INDEX))
   fi
  done
 done
