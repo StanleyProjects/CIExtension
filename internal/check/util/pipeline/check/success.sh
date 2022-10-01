@@ -1,5 +1,10 @@
 #!/bin/bash
 
+export FOO='foo'
+export BAR=''
+
+. ex/util/pipeline './test.sh'
+
 CODE=0
 ex/util/pipeline \
  'exit 0' \
