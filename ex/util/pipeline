@@ -12,7 +12,7 @@ for ((PIPELINE_INDEX=1; PIPELINE_INDEX<=$#; PIPELINE_INDEX++)); do
   echo "The command [$PIPELINE_INDEX/$#] is empty!"; exit $((20 + $PIPELINE_INDEX))
  fi
  echo -e "\n >-- start $PIPELINE_ID [$PIPELINE_INDEX/$#] command -->"
- $PIPELINE_COMMAND; PIPELINE_CODE=$?
+ /bin/bash -c "$PIPELINE_COMMAND"; PIPELINE_CODE=$?
  if test $PIPELINE_CODE -ne 0; then
   echo -e " <-- command $PIPELINE_ID [$PIPELINE_INDEX/$#] error!\n"; exit $((30 + $PIPELINE_INDEX))
  fi
