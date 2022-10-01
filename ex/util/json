@@ -80,4 +80,7 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   esac
  fi
  printf -v "$JSON_VARIABLE" '%s' "$JSON_RESULT"
+ if test $? -ne 0; then
+  echo "Set value error!"; exit 104
+ fi
 done

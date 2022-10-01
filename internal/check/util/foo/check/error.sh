@@ -129,7 +129,21 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
  echo "
  Check queries..."
 
- QUERIES=('a' '-a' 'foo'
+ QUERIES=('-si a' '-sfs -a' '-sb foo')
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 120 + QUERY_INDEX))
+  fi
+ done
+ QUERIES=(
   '.val_boolean_true'
   '.val_boolean_false'
   '.val_string'
@@ -137,18 +151,89 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_object'
   '.val_array_2'
   '.val_array_empty'
-  '.val_null')
+  '.val_null'
+ )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
   case "$SOURCE_OPTION" in
    '-j') EXPECTED=41;;
    '-f') EXPECTED=42;;
-   *) exit 1;; # todo
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
   esac
   ACTUAL=0
   ex/util/json "$SOURCE_OPTION" "$SOURCE" -si "${QUERIES[$QUERY_INDEX]}" 3; ACTUAL=$?
   if test $ACTUAL -ne $EXPECTED; then
    echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-   exit $((1000 * SOURCE_INDEX + 120 + QUERY_INDEX))
+   exit $((1000 * SOURCE_INDEX + 130 + QUERY_INDEX))
+  fi
+ done
+ QUERIES=(
+  '.val_int'
+  '.val_float'
+  '.val_boolean_true'
+  '.val_boolean_false'
+  '.val_string_empty'
+  '.val_object'
+  '.val_array_2'
+  '.val_array_empty'
+  '.val_null'
+ )
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" -sfs "${QUERIES[$QUERY_INDEX]}" 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 140 + QUERY_INDEX))
+  fi
+ done
+ QUERIES=(
+  '.val_int'
+  '.val_float'
+  '.val_boolean_true'
+  '.val_boolean_false'
+  '.val_object'
+  '.val_array_2'
+  '.val_array_empty'
+  '.val_null'
+ )
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" -ss "${QUERIES[$QUERY_INDEX]}" 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 150 + QUERY_INDEX))
+  fi
+ done
+ QUERIES=(
+  '.val_int'
+  '.val_float'
+  '.val_string'
+  '.val_string_empty'
+  '.val_object'
+  '.val_array_2'
+  '.val_array_empty'
+  '.val_null'
+ )
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" -sb "${QUERIES[$QUERY_INDEX]}" 3; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 160 + QUERY_INDEX))
   fi
  done
 
@@ -177,6 +262,17 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   if test $ACTUAL -ne $EXPECTED; then
    echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
    exit $((1000 * SOURCE_INDEX + 630 + QUERY_INDEX))
+  fi
+ done
+
+ EXPECTED=104
+ QUERIES=('1' '2' '42' '-a' '/foo')
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  ACTUAL=0
+  ex/util/json "$SOURCE_OPTION" "$SOURCE" -si .val_int "${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
+  if test $ACTUAL -ne $EXPECTED; then
+   echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+   exit $((1000 * SOURCE_INDEX + 210 + QUERY_INDEX))
   fi
  done
 done
