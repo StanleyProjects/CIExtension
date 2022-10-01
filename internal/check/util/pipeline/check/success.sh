@@ -1,5 +1,10 @@
 #!/bin/bash
 
+export FOO='foo'
+export BAR=''
+
+. ex/util/pipeline './test.sh'
+
 CODE=0
 ex/util/pipeline \
  'exit 0' \
@@ -16,5 +21,3 @@ fi
  'echo a' \
  'echo b' \
  'echo c'
-
-exit 1 # todo env
