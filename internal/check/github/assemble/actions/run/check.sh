@@ -60,7 +60,6 @@ if test $ACTUAL -ne $EXPECTED; then
  exit 105
 fi
 
-
 REPOSITORY_NAME='useless'
 ACTUAL=0
 ex/github/assemble/actions/run.sh; ACTUAL=$?
@@ -82,12 +81,22 @@ if [ ! -s "$ARTIFACT" ]; then
  exit 21
 fi
 
+if test "$(jq -r .repository.name "$ARTIFACT")" != "$REPOSITORY_NAME"; then
+ echo "Actual repository name error!"
+ exit 31
+fi
+
+if test "$(jq -r .repository.owner.login "$ARTIFACT")" != "$REPOSITORY_OWNER"; then
+ echo "Actual repository owner login error!"
+ exit 32
+fi
+
 if test "$(jq .id "$ARTIFACT")" != "$CI_BUILD_ID"; then
  echo "Actual ID error!"
- exit 31
+ exit 33
 fi
 
 if test "$(jq .run_number "$ARTIFACT")" != '56'; then
  echo "Actual run number error!"
- exit 32
+ exit 34
 fi
