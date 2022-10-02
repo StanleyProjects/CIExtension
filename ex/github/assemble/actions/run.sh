@@ -7,14 +7,9 @@ echo "Assemble GitHub actions run..."
 mkdir -p assemble/vcs/actions \
  || . ex/util/throw 11 "Illegal state!"
 
-CODE=0
-CODE=$(curl -s -w %{http_code} -m 16 -o assemble/vcs/actions/run.json \
- "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/actions/runs/$CI_BUILD_ID")
-if test $CODE -ne 200; then
- echo "Get actions run \"$CI_BUILD_ID\" error!"
- echo "Request error with response code $CODE!"
- exit 21
-fi
+ex/util/url "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/actions/runs/$CI_BUILD_ID" \
+ assemble/vcs/actions/run.json \
+ || . ex/util/throw 21 "Get actions run \"$CI_BUILD_ID\" error!"
 
 . ex/util/json -f assemble/vcs/actions/run.json \
  -sfs .html_url RUN_HTML_URL
