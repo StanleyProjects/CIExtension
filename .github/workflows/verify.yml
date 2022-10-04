@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
-    env:
     steps:
       - run: |
           echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
