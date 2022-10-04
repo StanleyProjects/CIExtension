@@ -27,4 +27,5 @@ done
 ACTUAL=$(((COVERED * 100) / SIZE))
 if test $ACTUAL -lt $EXPECTED; then
  echo "Coverage error! Actual is $ACTUAL, but expected is $EXPECTED."
+ exit 21
 fi
