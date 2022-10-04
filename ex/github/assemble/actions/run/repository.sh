@@ -1,10 +1,12 @@
 #!/bin/bash
 
-echo "Assemble GitHub repository..."
+echo "Assemble GitHub actions run repository..."
 
-. ex/util/require VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME
+. ex/util/json -f assemble/vcs/actions/run.json \
+ -sfs .repository.url REPOSITORY_URL \
+ -sfs .repository.name REPOSITORY_NAME
 
-ex/util/url "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" \
+ex/util/url "$REPOSITORY_URL" \
  assemble/vcs/repository.json \
  || . ex/util/throw 21 "Get repository \"$REPOSITORY_NAME\" error!"
 
