@@ -4,6 +4,8 @@ echo "Assemble GitHub worker..."
 
 . ex/util/require VCS_DOMAIN VCS_PAT
 
+. ex/util/mkdirs assemble/vcs
+
 CODE=0
 CODE=$(curl -s -w %{http_code} -o assemble/vcs/worker.json \
  "$VCS_DOMAIN/user" \

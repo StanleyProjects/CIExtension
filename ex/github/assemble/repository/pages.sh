@@ -8,8 +8,7 @@ echo "Assemble GitHub repository pages..."
  -sfs .url REPOSITORY_URL \
  -sfs .html_url REPOSITORY_HTML_URL
 
-mkdir -p assemble/vcs/repository \
- || . ex/util/throw 11 "Illegal state!"
+. ex/util/mkdirs assemble/vcs/repository
 
 CODE=0
 CODE=$(curl -s -w %{http_code} -o assemble/vcs/repository/pages.json \

@@ -4,8 +4,7 @@ echo "Assemble GitHub repository..."
 
 . ex/util/require VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME
 
-mkdir -p assemble/vcs \
- || . ex/util/throw 11 "Illegal state!"
+. ex/util/mkdirs assemble/vcs
 
 ex/util/url "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" \
  assemble/vcs/repository.json \
