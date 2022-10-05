@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if test $# -ne 1; then
+ echo "Script needs for 1 argument, but actual is $#!"; exit 11
+fi
+
+MAKE_DIRECTORY="$1"
+
+for REQUIRE_ARGUMENT in MAKE_DIRECTORY
+ do if test -z "${!REQUIRE_ARGUMENT}"; then
+  echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 12; fi done
+
+[ -d "$MAKE_DIRECTORY" ] && exit 0
+
+MAKE_CODE=0
+mkdir -p "$MAKE_DIRECTORY"; MAKE_CODE=$?
+
+if test $MAKE_CODE != 0; then
+ echo "Make dir error!"
+ exit 21
+fi
+
+if [ ! -d "$MAKE_DIRECTORY" ]; then
+ echo "Dir \"$MAKE_DIRECTORY\" does not exist!"
+ exit 22
+fi
