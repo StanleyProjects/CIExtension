@@ -1,0 +1,33 @@
+name: Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_source:
+        description: "VCS source name. For example [wip, dev...]."
+        required: true
+        default: "wip"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      VCS_PAT: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+    steps:
+      - run: |
+          echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME=$(jq -r .repository.name $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "GIT_BRANCH_SRC=${{github.event.inputs.git_source}}" >> $GITHUB_ENV
+          if test -z "$VCS_PAT"; then exit 21; fi
+          mkdir -p repository
+      - working-directory: repository
+        run: |
+          git init
+          git remote add origin https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
+          git fetch --depth=1 origin $GIT_BRANCH_SRC
+          git checkout FETCH_HEAD
+          echo "GITHUB_PAT=$VCS_PAT" >> env
+      - working-directory: repository
+        run: |
+          internal/unit/test/coverage.sh
+          internal/unit/test.sh
