@@ -20,7 +20,7 @@ for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
  if test -s "internal/check/$RELATIVE/build.sh"; then
   COVERED=$((COVERED + 1))
  else
-  echo "Script $SCRIPT does not covered!"
+  echo "Script \"$SCRIPT\" does not covered!"
  fi
 done
 
