@@ -5,8 +5,7 @@ echo "Assemble GitHub repository owner..."
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .owner.url REPOSITORY_OWNER_URL
 
-mkdir -p assemble/vcs/repository \
- || . ex/util/throw 11 "Illegal state!"
+. ex/util/mkdirs assemble/vcs/repository
 
 ex/util/url "$REPOSITORY_OWNER_URL" \
  assemble/vcs/repository/owner.json \

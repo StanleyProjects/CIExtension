@@ -4,8 +4,7 @@ echo "Assemble GitHub actions run..."
 
 . ex/util/require VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME CI_BUILD_ID
 
-mkdir -p assemble/vcs/actions \
- || . ex/util/throw 11 "Illegal state!"
+. ex/util/mkdirs assemble/vcs/actions
 
 ex/util/url "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/actions/runs/$CI_BUILD_ID" \
  assemble/vcs/actions/run.json \

@@ -6,6 +6,8 @@ echo "Assemble GitHub actions run repository..."
  -sfs .repository.url REPOSITORY_URL \
  -sfs .repository.name REPOSITORY_NAME
 
+. ex/util/mkdirs assemble/vcs
+
 ex/util/url "$REPOSITORY_URL" \
  assemble/vcs/repository.json \
  || . ex/util/throw 21 "Get repository \"$REPOSITORY_NAME\" error!"
