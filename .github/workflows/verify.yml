@@ -15,13 +15,12 @@ jobs:
       - run: |
           echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
           echo "REPOSITORY_NAME=$(jq -r .repository.name $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "GIT_BRANCH_SRC=${{github.event.inputs.git_source}}" >> $GITHUB_ENV
           mkdir -p repository
       - working-directory: repository
         run: |
           git init
           git remote add origin https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
-          git fetch --depth=1 origin $GIT_BRANCH_SRC
+          git fetch --depth=1 origin "${{github.event.inputs.git_source}}"
           git checkout FETCH_HEAD
       - working-directory: repository
         env:
@@ -42,3 +41,11 @@ jobs:
         run: |
           internal/unit/test/coverage.sh
           internal/unit/test.sh
+      - working-directory: repository
+        env:
+          TELEGRAM: ${{secrets.TELEGRAM}}
+        run: |
+          export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
+          export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
+          export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
+          ex/notification/telegram/send_message.sh "CI build [#$GITHUB_RUN_ID]($(jq -r .html_url $GITHUB_EVENT_PATH)) success."
