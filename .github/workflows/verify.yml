@@ -43,12 +43,13 @@ jobs:
 #          internal/unit/test.sh
       - working-directory: repository
         env:
-          VCS_TOKENS: ${{secrets.VCS_TOKENS}}
+          VCS_DOMAIN: 'https://api.github.com'
+          CI_BUILD_ID: $GITHUB_RUN_ID
+        run: ex/github/assemble/actions/run.sh
+      - working-directory: repository
+        env:
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
-          export VCS_PAT="$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)"; \
-          export CI_BUILD_ID="$GITHUB_RUN_ID"; \
-          ex/github/assemble/actions/run.sh
           export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
           export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
           export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
