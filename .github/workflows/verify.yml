@@ -29,10 +29,10 @@ jobs:
           VCS_TOKENS: ${{secrets.VCS_TOKENS}}
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
-          echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> \
-           internal/check/github/assemble/repository/pages/env
-          echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> \
-           internal/check/github/assemble/worker/env
+          for it in \
+           internal/check/github/assemble/repository/pages/env \
+           internal/check/github/assemble/worker/env; do \
+           echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> "$it" || exit 1; done
           echo "CHECK_TELEGRAM_BOT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)" >> \
            internal/check/notification/telegram/send_message/env
           echo "CHECK_TELEGRAM_BOT_TOKEN=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)" >> \
