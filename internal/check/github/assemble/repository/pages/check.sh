@@ -15,7 +15,11 @@ echo "
 Check success..."
 
 VCS_DOMAIN='https://api.github.com'
-VCS_PAT="$GITHUB_PAT"
+VCS_PAT="$CHECK_VCS_PAT"
+if test -z "$VCS_PAT"; then
+ echo "VCS personal access token is empty!"
+ exit 102
+fi
 REPOSITORY_OWNER='kepocnhh'
 REPOSITORY_NAME='useless'
 CI_BUILD_ID=2989462289
