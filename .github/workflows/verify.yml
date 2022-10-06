@@ -45,6 +45,7 @@ jobs:
         env:
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
+          ex/notification/telegram/send_file.sh "$GITHUB_EVENT_PATH"
           echo "run_number $(jq .run_number $GITHUB_EVENT_PATH)"
           echo "html_url $(jq -r .html_url $GITHUB_EVENT_PATH)"
           export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
