@@ -10,8 +10,10 @@ TELEGRAM_FILE="$1"
 
 . ex/util/require TELEGRAM_BOT_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID TELEGRAM_FILE
 
-if [ ! -s "$TELEGRAM_FILE" ]; then
+if [ ! -f "$TELEGRAM_FILE" ]; then
  echo "File \"$TELEGRAM_FILE\" does not exist!"; exit 12
+elif [ ! -s "$TELEGRAM_FILE" ]; then
+ echo "File \"$TELEGRAM_FILE\" is empty!"; exit 13
 fi
 
 TELEGRAM_OUTPUT="/tmp/$(date +%s)"
