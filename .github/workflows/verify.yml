@@ -28,9 +28,9 @@ jobs:
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
           for it in \
-           internal/check/github/assemble/repository/pages/env \
-           internal/check/github/assemble/worker/env; do \
-           echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> "$it" || exit 1; done
+           internal/check/github/assemble/repository/pages \
+           internal/check/github/assemble/worker; do \
+           echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> "$it/env" || exit 1; done
           for it in \
            internal/check/notification/telegram/send_message \
            internal/check/notification/telegram/send_file; do \
