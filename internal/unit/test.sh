@@ -17,7 +17,7 @@ for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
  fi
  SCRIPT_CHECK="internal/check/$RELATIVE/build.sh"
  if test -s "$SCRIPT_CHECK"; then
-  echo "Check $((SCRIPT_INDEX + 1))/$SIZE"
+  echo "Check $((SCRIPT_INDEX + 1))/$SIZE \"$RELATIVE\"..."
   $SCRIPT_CHECK || exit 21
  else
   echo "Script check \"$SCRIPT_CHECK\" does not exist!"; exit 22

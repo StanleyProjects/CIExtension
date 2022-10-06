@@ -120,4 +120,4 @@ TELEGRAM_CHAT_ID=$CHECK_TELEGRAM_CHAT_ID
 echo "
 Check success..."
 
-. $SCRIPT "check notification telegram send message | $(date +%s)"
+. $SCRIPT "$FILE_PATH"
