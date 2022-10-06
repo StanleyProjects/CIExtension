@@ -1,7 +1,8 @@
 #!/bin/bash
 
-DOCKERFILE="internal/check/github/assemble/repository/pages/Dockerfile"
-NAME="$(md5sum <<< "$DOCKERFILE" | base64)"
+RELATIVE_PATH='internal/check/github/assemble/repository/pages'
+DOCKERFILE="$RELATIVE_PATH/Dockerfile"
+NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"
 VERSION=$(date +%s)
 TAG="$NAME:$VERSION"
@@ -13,7 +14,7 @@ docker rm "$CONTAINER"
 CODE=0
 docker build --no-cache -f="$DOCKERFILE" -t="$TAG" . \
  && docker run --rm \
-  --env-file env \
+  --env-file "$RELATIVE_PATH/env" \
   --name="$CONTAINER" "$TAG"; CODE=$?
 
 if test $CODE -ne 0; then

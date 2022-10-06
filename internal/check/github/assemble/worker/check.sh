@@ -24,7 +24,7 @@ fi
 echo "
 Check success..."
 
-VCS_PAT="$GITHUB_PAT"
+VCS_PAT="$CHECK_VCS_PAT"
 mkdir -p assemble/vcs
 . ex/github/assemble/worker.sh
 
@@ -34,7 +34,7 @@ if test -f "$RESULT"; then
  exit 111
 fi
 curl -f -w %{http_code} -o "$RESULT" "$VCS_DOMAIN/user" \
- -H "Authorization: token $GITHUB_PAT" || exit 112
+ -H "Authorization: token $CHECK_VCS_PAT" || exit 112
 
 ARTIFACT='assemble/vcs/worker.json'
 if [ ! -s "$ARTIFACT" ]; then
