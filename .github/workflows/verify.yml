@@ -37,10 +37,10 @@ jobs:
            internal/check/notification/telegram/send_message/env
           echo "CHECK_TELEGRAM_CHAT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)" >> \
            internal/check/notification/telegram/send_message/env
-#      - working-directory: repository
-#        run: |
-#          internal/unit/test/coverage.sh
-#          internal/unit/test.sh
+      - working-directory: repository
+        run: |
+          internal/unit/test/coverage.sh
+          internal/unit/test.sh
       - working-directory: repository
         env:
           VCS_DOMAIN: 'https://api.github.com'
