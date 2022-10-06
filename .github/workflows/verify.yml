@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - run: |
-          echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "REPOSITORY_NAME=$(jq -r .repository.name $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME={{github.event.repository.name}}" >> $GITHUB_ENV
           mkdir -p repository
       - working-directory: repository
         run: |
@@ -43,15 +43,14 @@ jobs:
 #          internal/unit/test.sh
       - working-directory: repository
         env:
+          VCS_TOKENS: ${{secrets.VCS_TOKENS}}
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
-          echo "run_number $(jq .run_number $GITHUB_EVENT_PATH)"
-          echo "html_url $(jq -r .html_url $GITHUB_EVENT_PATH)"
+          export VCS_PAT="$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)"; \
+          export CI_BUILD_ID="$GITHUB_RUN_ID"; \
+          ex/github/assemble/actions/run.sh
           export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
           export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
           export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
-          ex/notification/telegram/send_message.sh "CI build [#$(jq .run_number $GITHUB_EVENT_PATH)]($(jq -r .html_url $GITHUB_EVENT_PATH)) success."
-          export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
-          export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
-          export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
-          ex/notification/telegram/send_file.sh "$GITHUB_EVENT_PATH"
+          ex/notification/telegram/send_message.sh \
+           "CI build [#$(jq .run_number assemble/vcs/actions/run.json)]($(jq -r .html_url assemble/vcs/actions/run.json)) success."
