@@ -89,6 +89,8 @@ fi
 
 # -eq
 exit 1 # todo
+# -eqv
+exit 1 # todo
 # -s
 exit 1 # todo
 
@@ -98,6 +100,8 @@ Check success..."
 # -d
 exit 1 # todo
 # -eq
+exit 1 # todo
+# -eqv
 exit 1 # todo
 # -s
 exit 1 # todo
