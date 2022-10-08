@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if test $# -eq 0; then
+ echo "Empty arguments!"; exit 11
+fi
+
+ASSERT_OPTION="$1"
+
+for REQUIRE_ARGUMENT in ASSERT_OPTION
+ do if test -z "${!REQUIRE_ARGUMENT}"; then
+  echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 12; fi done
+
+case "$ASSERT_OPTION" in
+ -eq)
+  if test $# -ne 3; then
+   echo "Script needs for 3 argument, but actual is $#!"; exit 41; fi
+  ASSERT_VARIABLE_EXPECTED="$2"
+  for REQUIRE_ARGUMENT in ASSERT_VARIABLE_EXPECTED ASSERT_VARIABLE_ACTUAL
+   do if test -z "${!REQUIRE_ARGUMENT}"; then
+    echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 42; fi done
+  ASSERT_VARIABLE_ACTUAL="$3"
+  if test "${!ASSERT_VARIABLE_EXPECTED}" != "${!ASSERT_VARIABLE_ACTUAL}"; then
+   echo "Actual is \"${!ASSERT_ACTUAL}\", but expected is \"${!ASSERT_EXPECTED}\"!"; exit 44; fi;;
+ -eqv)
+  if test $# -ne 3; then
+   echo "Script needs for 3 argument, but actual is $#!"; exit 51; fi
+  ASSERT_VALUE_EXPECTED="$2"
+  ASSERT_VALUE_ACTUAL="$3"
+  for REQUIRE_ARGUMENT in ASSERT_VALUE_EXPECTED ASSERT_VALUE_ACTUAL
+   do if test -z "${!REQUIRE_ARGUMENT}"; then
+    echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 52; fi done
+  if test "$ASSERT_VALUE_EXPECTED" != "$ASSERT_VALUE_ACTUAL"; then
+   echo "Actual is \"$ASSERT_VALUE_EXPECTED\", but expected is \"$ASSERT_VALUE_ACTUAL\"!"; exit 54; fi;;
+ -s)
+  if test $# -eq 1; then
+   echo "Script needs more arguments!"; exit 21; fi
+  for ((ASSERT_FILE_INDEX=2; ASSERT_FILE_INDEX<=$#; ASSERT_FILE_INDEX++)); do
+   ASSERT_FILE="${!ASSERT_FILE_INDEX}"
+   if test -z "$ASSERT_FILE"; then
+    echo "Argument \"ASSERT_FILE\" is empty!"; exit $((110 + ASSERT_FILE_INDEX)); fi
+   if [ ! -f "$ASSERT_FILE" ]; then
+    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((120 + ASSERT_FILE_INDEX)); fi
+   if [ ! -s "$ASSERT_FILE" ]; then
+    echo "File \"$ASSERT_FILE\" is empty!"; exit $((130 + ASSERT_FILE_INDEX)); fi
+  done;;
+ -d)
+  if test $# -eq 1; then
+   echo "Script needs more arguments!"; exit 31; fi
+  for ((ASSERT_DIRECTORY_INDEX=2; ASSERT_DIRECTORY_INDEX<=$#; ASSERT_DIRECTORY_INDEX++)); do
+   ASSERT_DIRECTORY="${!ASSERT_DIRECTORY_INDEX}"
+   if test -z "$ASSERT_DIRECTORY"; then
+    echo "Argument \"ASSERT_DIRECTORY\" is empty!"; exit $((140 + ASSERT_DIRECTORY_INDEX)); fi
+   if [ ! -d "$ASSERT_DIRECTORY" ]; then
+    echo "Directory \"$ASSERT_DIRECTORY\" does not exist!"; exit $((150 + ASSERT_DIRECTORY_INDEX)); fi
+  done;;
+ *) echo "Assert | Option \"$ASSERT_OPTION\" is not supported!"; exit 13;;
+esac
