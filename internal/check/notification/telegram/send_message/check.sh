@@ -3,7 +3,7 @@
 SCRIPT='ex/notification/telegram/send_message.sh'
 if [ ! -s "$SCRIPT" ]; then
  echo "Script \"$SCRIPT\" does not exist!"
- error 1
+ exit 1
 fi
 
 echo "

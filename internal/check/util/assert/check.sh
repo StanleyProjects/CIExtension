@@ -3,7 +3,7 @@
 SCRIPT='ex/util/assert'
 if [ ! -s "$SCRIPT" ]; then
  echo "Script \"$SCRIPT\" does not exist!"
- error 1
+ exit 1
 fi
 
 echo "
