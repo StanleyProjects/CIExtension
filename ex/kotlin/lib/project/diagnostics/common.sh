@@ -32,7 +32,7 @@ for ((ARG_NUMBER=1; ARG_NUMBER<=$#; ARG_NUMBER++)); do
     || . ex/util/throw 21 "Illegal state!"
    echo "$(jq -Mc ".$TYPE.path=\"$RELATIVE\"" diagnostics/summary.json)" > diagnostics/summary.json \
     && echo "$(jq -Mc ".$TYPE.title=\"$TITLE\"" diagnostics/summary.json)" > diagnostics/summary.json \
-    || exit $((100+TYPE_NUMBER))
+    || . ex/util/throw $((100+TYPE_NUMBER)) "Illegal state!"
   fi
  done
 done
