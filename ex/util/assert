@@ -43,6 +43,16 @@ case "$ASSERT_OPTION" in
    if [ ! -s "$ASSERT_FILE" ]; then
     echo "File \"$ASSERT_FILE\" is empty!"; exit $((130 + ASSERT_FILE_INDEX)); fi
   done;;
+ -f)
+  if test $# -eq 1; then
+   echo "Script needs more arguments!"; exit 61; fi
+  for ((ASSERT_FILE_INDEX=2; ASSERT_FILE_INDEX<=$#; ASSERT_FILE_INDEX++)); do
+   ASSERT_FILE="${!ASSERT_FILE_INDEX}"
+   if test -z "$ASSERT_FILE"; then
+    echo "Argument \"ASSERT_FILE\" is empty!"; exit $((160 + ASSERT_FILE_INDEX)); fi
+   if [ ! -f "$ASSERT_FILE" ]; then
+    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((170 + ASSERT_FILE_INDEX)); fi
+  done;;
  -d)
   if test $# -eq 1; then
    echo "Script needs more arguments!"; exit 31; fi
