@@ -3,7 +3,7 @@
 echo "Workflow verify check..."
 
 REPOSITORY=repository
-. ex/util/assert -d $REPOSITORY
+. ex/util/assert -d "$REPOSITORY"
 
 ex/kotlin/lib/project/verify/pre.sh \
  || . ex/util/throw 11 "Pre verify unexpected error!"
