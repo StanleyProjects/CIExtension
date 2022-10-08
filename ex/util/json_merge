@@ -10,7 +10,7 @@ JSON_SOURCE="$2"
 case "$JSON_SOURCE_OPTION" in
  -v | --variable)
   if test -z "$JSON_SOURCE"; then
-   echo "Source is empty!"; exit 121
+   echo "Variable name is empty!"; exit 121
   fi;;
  -f | --file)
   if [ ! -f "$JSON_SOURCE" ]; then
@@ -25,23 +25,27 @@ JSON_MERGE_CODE=0
 for ((JSON_QUERY_INDEX=3; JSON_QUERY_INDEX<=$#; JSON_QUERY_INDEX++)); do
  JSON_QUERY="${!JSON_QUERY_INDEX}"
  if test -z "$JSON_QUERY"; then
-  echo "Json merge variable is empty!"; exit $((210 + JSON_QUERY_INDEX)); fi
+  echo "Json merge variable is empty!"; exit $((130 + JSON_QUERY_INDEX)); fi
  case "$JSON_SOURCE_OPTION" in
   -v | --variable)
    JSON_MERGE_RESULT="$(echo "${!JSON_SOURCE}" | jq -Mc "$JSON_QUERY")"
-   JSON_MERGE_CODE=$?;;
+   JSON_MERGE_CODE=$?
+   if test $JSON_MERGE_CODE -ne 0; then
+    echo "Json merge [$(($JSON_QUERY_INDEX - 1))/$(($# - 1))] variable \"$JSON_SOURCE\" error!";
+    exit $((140 + JSON_QUERY_INDEX - 2))
+   fi;;
   -f | --file)
    JSON_MERGE_RESULT="$(cat "$JSON_SOURCE" | jq -Mc "$JSON_QUERY")"
-   JSON_MERGE_CODE=$?;;
+   JSON_MERGE_CODE=$?
+   if test $JSON_MERGE_CODE -ne 0; then
+    echo "Json merge [$(($JSON_QUERY_INDEX - 1))/$(($# - 1))] file \"$JSON_SOURCE\" error!";
+    exit $((150 + JSON_QUERY_INDEX - 2))
+   fi;;
   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 22;;
  esac
- if test $JSON_MERGE_CODE -ne 0; then
-  echo "Json merge [$(($JSON_QUERY_INDEX - 1))/$(($# - 1))] \"$JSON_MERGE_VARIABLE\" error!";
-  exit $((220 + JSON_QUERY_INDEX))
- fi
  case "$JSON_SOURCE_OPTION" in
   -v | --variable)
-   printf -v "$JSON_MERGE_VARIABLE" '%s' "$JSON_MERGE_RESULT";;
+   printf -v "$JSON_SOURCE" '%s' "$JSON_MERGE_RESULT";;
   -f | --file)
    echo "$JSON_MERGE_RESULT" > "$JSON_SOURCE" || exit 1;;
   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 23;;
