@@ -2,8 +2,11 @@
 
 echo "Project diagnostics common..."
 
+[ $# -eq 0 ] && . ex/util/throw 11 "Empty arguments!"
+
 REPOSITORY=repository
 . ex/util/assert -d "$REPOSITORY"
+. ex/util/assert -s diagnostics/summary.json
 
 CODE=0
 for ((ARG_NUMBER=1; ARG_NUMBER<=$#; ARG_NUMBER++)); do
@@ -11,7 +14,8 @@ for ((ARG_NUMBER=1; ARG_NUMBER<=$#; ARG_NUMBER++)); do
  . ex/util/require ENVIRONMENT
  . ex/util/assert -s "$ENVIRONMENT"
  echo "Start environment [$ARG_NUMBER/$#] ${ENVIRONMENT}..."
- ARRAY=($(jq -Mcer "keys|.[]" $ENVIRONMENT))
+ ARRAY=($(jq -Mcer 'keys|.[]' $ENVIRONMENT)) \
+  || . ex/util/throw $((200+ARG_NUMBER)) "Parse environment [$ARG_NUMBER/$#] \"$ENVIRONMENT\" error!"
  SIZE=${#ARRAY[*]}
  for ((TYPE_INDEX=0; TYPE_INDEX<$SIZE; TYPE_INDEX++)); do
   TYPE="${ARRAY[TYPE_INDEX]}"
@@ -30,14 +34,14 @@ for ((ARG_NUMBER=1; ARG_NUMBER<=$#; ARG_NUMBER++)); do
    . ex/util/assert -d "$REPOSITORY/$REPORT"
    cp -r $REPOSITORY/$REPORT/* "diagnostics/report/$RELATIVE" \
     || . ex/util/throw 21 "Illegal state!"
-   echo "$(jq -Mc ".$TYPE.path=\"$RELATIVE\"" diagnostics/summary.json)" > diagnostics/summary.json \
-    && echo "$(jq -Mc ".$TYPE.title=\"$TITLE\"" diagnostics/summary.json)" > diagnostics/summary.json \
-    || . ex/util/throw $((100+TYPE_NUMBER)) "Illegal state!"
+   . ex/util/json_merge -f diagnostics/summary.json \
+    ".$TYPE.path=\"$RELATIVE\"" \
+    ".$TYPE.title=\"$TITLE\""
   fi
  done
 done
 
-TYPES="$(jq -Mcer "keys" diagnostics/summary.json)" \
+TYPES="$(jq -Mcer keys diagnostics/summary.json)" \
  || . ex/util/throw 21 "Illegal state!"
 if test "$TYPES" == "[]"; then
  echo "Diagnostics should have determined the cause of the failure!"; exit 0
