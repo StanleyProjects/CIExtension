@@ -24,8 +24,8 @@ case "$ASSERT_OPTION" in
  -eqv)
   if test $# -ne 3; then
    echo "Script needs for 3 argument, but actual is $#!"; exit 51; fi
-  ASSERT_VALUE_EXPECTED="$2"
-  ASSERT_VALUE_ACTUAL="$3"
+  ASSERT_VALUE_ACTUAL="$2"
+  ASSERT_VALUE_EXPECTED="$3"
   if test "$ASSERT_VALUE_EXPECTED" != "$ASSERT_VALUE_ACTUAL"; then
    echo "Actual is \"$ASSERT_VALUE_ACTUAL\", but expected is \"$ASSERT_VALUE_EXPECTED\"!"; exit 54; fi;;
  -s)
