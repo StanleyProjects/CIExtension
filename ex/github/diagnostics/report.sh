@@ -4,6 +4,8 @@ echo "GitHub diagnostics report..."
 
 . ex/util/require VCS_PAT
 
+. ex/util/assert -s diagnostics/summary.json
+
 REPOSITORY=pages/diagnostics/report
 . ex/util/mkdirs "$REPOSITORY"
 
@@ -14,7 +16,7 @@ REPOSITORY=pages/diagnostics/report
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .clone_url REPOSITORY_CLONE_URL
 
-TYPES="$(jq -Mcer "keys" diagnostics/summary.json)" \
+TYPES="$(jq -Mcer keys diagnostics/summary.json)" \
  || . ex/util/throw 21 "Illegal state!"
 if test "$TYPES" == "[]"; then
  . ex/util/throw 22 "Diagnostics should have determined the cause of the failure!"

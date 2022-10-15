@@ -1,10 +1,10 @@
 #!/bin/bash
 
 PREFIX='ex'
-#TYPES=(
-# "$PREFIX/github"
-#)
-TYPES=($(echo "$PREFIX/*"))
+TYPES=(
+ "$PREFIX/github"
+)
+#TYPES=($(echo "$PREFIX/*"))
 for ((TYPE_INDEX=0; TYPE_INDEX<${#TYPES[@]}; TYPE_INDEX++)); do
  SCRIPTS=($(find "${TYPES[$TYPE_INDEX]}" -type f))
  SIZE=${#SCRIPTS[@]}
