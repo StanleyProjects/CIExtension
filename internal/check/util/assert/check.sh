@@ -114,8 +114,10 @@ done
 export FOO='foo'
 export BAR='bar'
 export BAZ="$FOO"
+export BAR2="$BAR"
 [ "$FOO" == "$BAR" ] && . ex/util/throw 101 "Illegal state!"
 [ "$FOO" != "$BAZ" ] && . ex/util/throw 101 "Illegal state!"
+[ "$BAR" != "$BAR2" ] && . ex/util/throw 101 "Illegal state!"
 
 QUERIES=('FOO BAR' 'BAR FOO' 'BAZ BAR' 'BAR BAZ')
 for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
@@ -241,9 +243,32 @@ echo "
 Check success..."
 
 # -d
-exit 1 # todo
+
+DIR="/tmp/$(date +%s)"
+rm -rf "$DIR"
+mkdir -p "$DIR" || . ex/util/throw 101 "Illegal state!"
+[ ! -d "$DIR" ] && . ex/util/throw 101 "Illegal state!"
+
+QUERIES=("$DIR" "$DIR $DIR" "$DIR $DIR $DIR")
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=0
+ ACTUAL=0
+ $SCRIPT -d ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 151; fi
+done
+
 # -eq
-exit 1 # todo
+
+QUERIES=('FOO BAZ' 'BAZ FOO' 'BAR2 BAR' 'BAR BAR2')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=0
+ ACTUAL=0
+ $SCRIPT -eq ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 152; fi
+done
+
 # -eqv
 exit 1 # todo
 # -s
