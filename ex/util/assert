@@ -27,7 +27,7 @@ case "$ASSERT_OPTION" in
   ASSERT_VALUE_ACTUAL="$2"
   ASSERT_VALUE_EXPECTED="$3"
   if test "$ASSERT_VALUE_EXPECTED" != "$ASSERT_VALUE_ACTUAL"; then
-   echo "Actual is \"$ASSERT_VALUE_ACTUAL\", but expected is \"$ASSERT_VALUE_EXPECTED\"!"; exit 54; fi;;
+   echo "Actual is \"$ASSERT_VALUE_ACTUAL\", but expected is \"$ASSERT_VALUE_EXPECTED\"!"; exit 52; fi;;
  -s)
   if test $# -eq 1; then
    echo "Script needs more arguments!"; exit 21; fi

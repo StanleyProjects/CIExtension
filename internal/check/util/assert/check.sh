@@ -129,11 +129,113 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
 done
 
 # -eqv
-exit 1 # todo
+
+QUERIES=('' '1' '1 2 3')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=51
+ ACTUAL=0
+ $SCRIPT -eqv ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 151
+ fi
+done
+
+QUERIES=(
+ '"" foo' 'foo ""' "'' foo" "foo ''"
+ 'FOO BAR' 'BAR FOO' 'BAZ BAR' 'BAR BAZ'
+)
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=52
+ ACTUAL=0
+ /bin/bash -c "$SCRIPT -eqv ${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 152
+ fi
+done
+
 # -s
-exit 1 # todo
+
+EXPECTED=21
+ACTUAL=0
+$SCRIPT -s; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+ exit 121
+fi
+
+FILE="/tmp/$(date +%s)"
+echo "$(date +%s)" > "$FILE"
+touch "${FILE}.empty"
+[ ! -s "$FILE" ] && . ex/util/throw 101 "Illegal state!"
+[ -s "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ ! -f "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ -f "${FILE}.not" ] && . ex/util/throw 101 "Illegal state!"
+
+EXPECTED=132
+ACTUAL=0
+$SCRIPT -s "${FILE}.empty"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=133
+ACTUAL=0
+$SCRIPT -s "$FILE" "${FILE}.empty"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+
+EXPECTED=133
+ACTUAL=0
+$SCRIPT -s "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+
+EXPECTED=122
+ACTUAL=0
+$SCRIPT -s "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=123
+ACTUAL=0
+$SCRIPT -s "$FILE" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+
+EXPECTED=123
+ACTUAL=0
+$SCRIPT -s "$FILE" "${FILE}.not" "${FILE}.empty"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+
 # -f
-exit 1 # todo
+
+EXPECTED=61
+ACTUAL=0
+$SCRIPT -f; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+ exit 131
+fi
+
+EXPECTED=172
+ACTUAL=0
+$SCRIPT -f "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 132; fi
+
+EXPECTED=173
+ACTUAL=0
+$SCRIPT -f "$FILE" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 133; fi
+
+EXPECTED=174
+ACTUAL=0
+$SCRIPT -f "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 134; fi
 
 echo "
 Check success..."
