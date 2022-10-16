@@ -47,6 +47,10 @@ git -C "$REPOSITORY" init && \
 
 JSON_PATH="$REPOSITORY/buildSrc/src/main/resources/json"
 
+$SCRIPT; . ex/util/assert -eqv $? 122
+
+. ex/util/pipeline ex/github/assemble/repository/pages.sh
+
 echo "
 bad json..."
 echo 'foo' > diagnostics/summary.json
@@ -71,10 +75,6 @@ $SCRIPT; . ex/util/assert -eqv $? 122
 echo "
 Check success..."
 
-exit 1 # todo
-
-rm -rf pages/diagnostics/report
-
 . ex/util/pipeline ex/github/assemble/worker.sh
 
 rm -rf "$REPOSITORY"
@@ -84,22 +84,31 @@ git -C "$REPOSITORY" init \
  && git -C "$REPOSITORY" fetch --depth=1 origin 'ea5c3000794cad3a469b23b16343e7934a9bf176' \
  && git -C "$REPOSITORY" checkout FETCH_HEAD \
  || . ex/util/throw 101 "Illegal state!"
+rm -rf diagnostics
 . ex/util/mkdirs diagnostics
 echo '{}' > diagnostics/summary.json
 JSON_FILE="$JSON_PATH/verify/common.json"
 . ex/util/assert -s "$JSON_FILE"
-ex/kotlin/lib/project/diagnostics/common.sh \
- "$JSON_PATH/verify/common.json" \
- "$JSON_PATH/verify/info.json" \
- "$JSON_PATH/verify/documentation.json"; . ex/util/assert -eqv $? 0
 
 . ex/util/json -f assemble/vcs/actions/run.json \
  -si .id CI_BUILD_ID \
  -si .run_number CI_BUILD_NUMBER
 
-TAG="diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID"
-ex/github/tag/test.sh "$TAG" || . ex/util/throw 101 "Illegal state!"
+echo "
+diagnostics..."
+echo '{}' > diagnostics/summary.json
+for it in 'foo' 'bar' 'baz'; do
+ . ex/util/json_merge -f diagnostics/summary.json \
+  ".$it.path=\"$it\"" \
+  ".$it.title=\"$it\""
+ . ex/util/mkdirs "diagnostics/report/$it"
+ echo "$it" > "diagnostics/report/$it/index.html"
+done
 
+TAG="diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID"
+. ex/github/tag/test.sh "$TAG"
+
+rm -rf pages/diagnostics/report
 $SCRIPT || . ex/util/throw 101 "Illegal state!"
 
 ex/github/tag/test.sh "$TAG" && . ex/util/throw 101 "Illegal state!"
@@ -113,7 +122,7 @@ git -C "$REPOSITORY" init \
  || . ex/util/throw 101 "Illegal state!"
 
 TYPES=($(jq -Mcer 'keys|.[]' diagnostics/summary.json)) \
- || . ex/util/throw 21 "Illegal state!"
+ || . ex/util/throw 101 "Illegal state!"
 TYPES_SIZE=${#TYPES[*]}
 for ((TYPE_INDEX=0; TYPE_INDEX<$TYPES_SIZE; TYPE_INDEX++)); do
  TYPE="${TYPES[TYPE_INDEX]}"
