@@ -34,11 +34,11 @@ case "$ASSERT_OPTION" in
   for ((ASSERT_FILE_INDEX=2; ASSERT_FILE_INDEX<=$#; ASSERT_FILE_INDEX++)); do
    ASSERT_FILE="${!ASSERT_FILE_INDEX}"
    if test -z "$ASSERT_FILE"; then
-    echo "Argument \"ASSERT_FILE\" is empty!"; exit $((110 + ASSERT_FILE_INDEX)); fi
+    echo "Argument [$((ASSERT_FILE_INDEX - 1))/$#] \"ASSERT_FILE\" is empty!"; exit $((110 + ASSERT_FILE_INDEX - 1)); fi
    if [ ! -f "$ASSERT_FILE" ]; then
-    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((120 + ASSERT_FILE_INDEX)); fi
+    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((120 + ASSERT_FILE_INDEX - 1)); fi
    if [ ! -s "$ASSERT_FILE" ]; then
-    echo "File \"$ASSERT_FILE\" is empty!"; exit $((130 + ASSERT_FILE_INDEX)); fi
+    echo "File \"$ASSERT_FILE\" is empty!"; exit $((130 + ASSERT_FILE_INDEX - 1)); fi
   done;;
  -f)
   if test $# -eq 1; then
@@ -46,9 +46,9 @@ case "$ASSERT_OPTION" in
   for ((ASSERT_FILE_INDEX=2; ASSERT_FILE_INDEX<=$#; ASSERT_FILE_INDEX++)); do
    ASSERT_FILE="${!ASSERT_FILE_INDEX}"
    if test -z "$ASSERT_FILE"; then
-    echo "Argument \"ASSERT_FILE\" is empty!"; exit $((160 + ASSERT_FILE_INDEX)); fi
+    echo "Argument [$((ASSERT_FILE_INDEX - 1))/$#] \"ASSERT_FILE\" is empty!"; exit $((160 + ASSERT_FILE_INDEX - 1)); fi
    if [ ! -f "$ASSERT_FILE" ]; then
-    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((170 + ASSERT_FILE_INDEX)); fi
+    echo "File \"$ASSERT_FILE\" does not exist!"; exit $((170 + ASSERT_FILE_INDEX - 1)); fi
   done;;
  -d)
   if test $# -eq 1; then

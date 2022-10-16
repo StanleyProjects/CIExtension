@@ -157,17 +157,18 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
  fi
 done
 
-# -s
+OPTION='-s'
+echo "option: \"$OPTION\"..."
 
 EXPECTED=21
 ACTUAL=0
-$SCRIPT -s; ACTUAL=$?
+$SCRIPT $OPTION; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
  exit 121
 fi
 
-FILE="/tmp/$(date +%s)"
+FILE="/tmp/file$(date +%s)"
 echo "$(date +%s)" > "$FILE"
 touch "${FILE}.empty"
 [ ! -s "$FILE" ] && . ex/util/throw 101 "Illegal state!"
@@ -175,67 +176,125 @@ touch "${FILE}.empty"
 [ ! -f "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
 [ -f "${FILE}.not" ] && . ex/util/throw 101 "Illegal state!"
 
-EXPECTED=132
+EXPECTED=111
 ACTUAL=0
-$SCRIPT -s "${FILE}.empty"; ACTUAL=$?
+$SCRIPT $OPTION ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 121; fi
+
+EXPECTED=112
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 121; fi
+
+EXPECTED=113
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" "$FILE" ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 121; fi
+
+EXPECTED=121
+ACTUAL=0
+$SCRIPT $OPTION "${FILE}.not"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
 
-EXPECTED=133
+EXPECTED=122
 ACTUAL=0
-$SCRIPT -s "$FILE" "${FILE}.empty"; ACTUAL=$?
+$SCRIPT $OPTION "$FILE" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=122
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" "${FILE}.not" "$FILE"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=131
+ACTUAL=0
+$SCRIPT $OPTION "${FILE}.empty"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=132
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" "${FILE}.empty"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
 
-EXPECTED=133
+EXPECTED=132
 ACTUAL=0
-$SCRIPT -s "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
+$SCRIPT $OPTION "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+
+EXPECTED=121
+ACTUAL=0
+$SCRIPT $OPTION "${FILE}.not"; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
+
+EXPECTED=122
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" "${FILE}.not"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
 
 EXPECTED=122
 ACTUAL=0
-$SCRIPT -s "${FILE}.not"; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 122; fi
-
-EXPECTED=123
-ACTUAL=0
-$SCRIPT -s "$FILE" "${FILE}.not"; ACTUAL=$?
+$SCRIPT $OPTION "$FILE" "${FILE}.not" "${FILE}.empty"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
 
-EXPECTED=123
-ACTUAL=0
-$SCRIPT -s "$FILE" "${FILE}.not" "${FILE}.empty"; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 123; fi
+OPTION='-f'
+echo "option: \"$OPTION\"..."
 
-# -f
+[ ! -s "$FILE" ] && . ex/util/throw 101 "Illegal state!"
+[ -s "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ ! -f "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ -f "${FILE}.not" ] && . ex/util/throw 101 "Illegal state!"
 
 EXPECTED=61
 ACTUAL=0
-$SCRIPT -f; ACTUAL=$?
+$SCRIPT $OPTION; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 131
-fi
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 131; fi
 
-EXPECTED=172
+EXPECTED=161
 ACTUAL=0
-$SCRIPT -f "${FILE}.not"; ACTUAL=$?
+$SCRIPT $OPTION ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 131; fi
+
+EXPECTED=162
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 131; fi
+
+EXPECTED=163
+ACTUAL=0
+$SCRIPT $OPTION "$FILE" "$FILE" ''; ACTUAL=$?
+if test $ACTUAL -ne $EXPECTED; then
+ echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 131; fi
+
+EXPECTED=171
+ACTUAL=0
+$SCRIPT $OPTION "${FILE}.not"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 132; fi
 
-EXPECTED=173
+EXPECTED=172
 ACTUAL=0
-$SCRIPT -f "$FILE" "${FILE}.not"; ACTUAL=$?
+$SCRIPT $OPTION "$FILE" "${FILE}.not"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 133; fi
 
-EXPECTED=174
+EXPECTED=173
 ACTUAL=0
-$SCRIPT -f "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
+$SCRIPT $OPTION "$FILE" "${FILE}.empty" "${FILE}.not"; ACTUAL=$?
 if test $ACTUAL -ne $EXPECTED; then
  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 134; fi
 
@@ -244,7 +303,7 @@ Check success..."
 
 # -d
 
-DIR="/tmp/$(date +%s)"
+DIR="/tmp/dir$(date +%s)"
 rm -rf "$DIR"
 mkdir -p "$DIR" || . ex/util/throw 101 "Illegal state!"
 [ ! -d "$DIR" ] && . ex/util/throw 101 "Illegal state!"
@@ -277,12 +336,34 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
  ACTUAL=0
  /bin/bash -c "$SCRIPT -eqv ${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
  if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit 152
- fi
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 153; fi
 done
 
-# -s
-exit 1 # todo
-# -f
-exit 1 # todo
+[ ! -s "$FILE" ] && . ex/util/throw 101 "Illegal state!"
+[ -s "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ ! -f "${FILE}.empty" ] && . ex/util/throw 101 "Illegal state!"
+[ -f "${FILE}.not" ] && . ex/util/throw 101 "Illegal state!"
+
+OPTION='-s'
+echo "option: \"$OPTION\"..."
+
+QUERIES=("$FILE" "$FILE $FILE" "$FILE $FILE $FILE")
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=0
+ ACTUAL=0
+ $SCRIPT $OPTION ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 154; fi
+done
+
+OPTION='-f'
+echo "option: \"$OPTION\"..."
+
+QUERIES=("$FILE" "$FILE ${FILE}.empty" "$FILE ${FILE}.empty $FILE" "$FILE ${FILE}.empty $FILE ${FILE}.empty")
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=0
+ ACTUAL=0
+ $SCRIPT $OPTION ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"; exit 155; fi
+done
