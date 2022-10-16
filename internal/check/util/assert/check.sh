@@ -145,7 +145,7 @@ done
 
 QUERIES=(
  '"" foo' 'foo ""' "'' foo" "foo ''"
- 'FOO BAR' 'BAR FOO' 'BAZ BAR' 'BAR BAZ'
+ '"$FOO" "$BAR"' '"$BAR" "$FOO"' '"$BAZ" "$BAR"' '"$BAR" "$BAZ"'
 )
 for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
  EXPECTED=52
@@ -270,7 +270,18 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
 done
 
 # -eqv
-exit 1 # todo
+
+QUERIES=('"$FOO" "$BAZ"' '"$BAZ" "$FOO"' '"$BAR2" "$BAR"' '"$BAR" "$BAR2"')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=0
+ ACTUAL=0
+ /bin/bash -c "$SCRIPT -eqv ${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 152
+ fi
+done
+
 # -s
 exit 1 # todo
 # -f
