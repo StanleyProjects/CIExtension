@@ -27,7 +27,7 @@ echo "{
 
 $SCRIPT; . ex/util/assert -eqv $? 122
 
-. ex/github/assemble/actions/run/repository.sh
+. ex/util/pipeline ex/github/assemble/actions/run/repository.sh
 
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .clone_url REPOSITORY_CLONE_URL
@@ -57,7 +57,7 @@ $SCRIPT; . ex/util/assert -eqv $? 122
 
 rm -rf pages/diagnostics/report
 
-. ex/github/assemble/worker.sh
+. ex/util/pipeline ex/github/assemble/worker.sh
 
 echo "
 Check success..."
@@ -78,20 +78,31 @@ ex/kotlin/lib/project/diagnostics/common.sh \
  "$JSON_PATH/verify/info.json" \
  "$JSON_PATH/verify/documentation.json"; . ex/util/assert -eqv $? 0
 
+. ex/util/json -f assemble/vcs/actions/run.json \
+ -si .id CI_BUILD_ID \
+ -si .run_number CI_BUILD_NUMBER
+
+TAG="diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID"
+ex/github/tag/test.sh "$TAG" || . ex/util/throw 101 "Illegal state!"
+
 $SCRIPT || . ex/util/throw 101 "Illegal state!"
 
-exit 1 # todo tag test
+ex/github/tag/test.sh "$TAG" && . ex/util/throw 101 "Illegal state!"
 
-REPOSITORY=pages/diagnostics/report
 rm -rf "$REPOSITORY"
 . ex/util/mkdirs "$REPOSITORY"
 git -C "$REPOSITORY" init \
  && git -C "$REPOSITORY" remote add origin "$REPOSITORY_CLONE_URL" \
- && git -C "$REPOSITORY" fetch --depth=1 origin "diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID" \
+ && git -C "$REPOSITORY" fetch --depth=1 origin "$TAG" \
  && git -C "$REPOSITORY" checkout FETCH_HEAD \
  || . ex/util/throw 101 "Illegal state!"
 
-TYPES="$(jq -Mcer keys diagnostics/summary.json)" \
+TYPES=($(jq -Mcer 'keys|.[]' diagnostics/summary.json)) \
  || . ex/util/throw 21 "Illegal state!"
-
-exit 1 # todo
+TYPES_SIZE=${#TYPES[*]}
+for ((TYPE_INDEX=0; TYPE_INDEX<$TYPES_SIZE; TYPE_INDEX++)); do
+ TYPE="${TYPES[TYPE_INDEX]}"
+ . ex/util/json -f diagnostics/summary.json \
+  -sfs ".${TYPE}.path" RELATIVE
+ . ex/util/assert -s "$REPOSITORY/build/$CI_BUILD_NUMBER/$CI_BUILD_ID/diagnostics/report/$RELATIVE/index.html"
+done

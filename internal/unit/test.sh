@@ -2,7 +2,8 @@
 
 PREFIX='ex'
 TYPES=(
- "$PREFIX/github"
+# "$PREFIX/github"
+ "$PREFIX/util"
 )
 #TYPES=($(echo "$PREFIX/*"))
 for ((TYPE_INDEX=0; TYPE_INDEX<${#TYPES[@]}; TYPE_INDEX++)); do

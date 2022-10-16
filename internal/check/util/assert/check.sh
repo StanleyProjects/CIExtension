@@ -88,10 +88,51 @@ if test $ACTUAL -ne $EXPECTED; then
 fi
 
 # -eq
-exit 1 # todo
+
+QUERIES=('' '1' '1 2 3')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=41
+ ACTUAL=0
+ $SCRIPT -eq ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 141
+ fi
+done
+
+QUERIES=('"" foo' 'foo ""' "'' foo" "foo ''")
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=42
+ ACTUAL=0
+ /bin/bash -c "$SCRIPT -eq ${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 142
+ fi
+done
+
+export FOO='foo'
+export BAR='bar'
+export BAZ="$FOO"
+[ "$FOO" == "$BAR" ] && . ex/util/throw 101 "Illegal state!"
+[ "$FOO" != "$BAZ" ] && . ex/util/throw 101 "Illegal state!"
+
+QUERIES=('FOO BAR' 'BAR FOO' 'BAZ BAR' 'BAR BAZ')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ EXPECTED=43
+ ACTUAL=0
+ $SCRIPT -eq ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
+ if test $ACTUAL -ne $EXPECTED; then
+  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
+  exit 143
+ fi
+done
+
 # -eqv
 exit 1 # todo
 # -s
+exit 1 # todo
+# -f
 exit 1 # todo
 
 echo "
@@ -104,4 +145,6 @@ exit 1 # todo
 # -eqv
 exit 1 # todo
 # -s
+exit 1 # todo
+# -f
 exit 1 # todo

@@ -20,7 +20,7 @@ case "$ASSERT_OPTION" in
    do if test -z "${!REQUIRE_ARGUMENT}"; then
     echo "Argument \"$REQUIRE_ARGUMENT\" is empty!"; exit 42; fi done
   if test "${!ASSERT_VARIABLE_EXPECTED}" != "${!ASSERT_VARIABLE_ACTUAL}"; then
-   echo "Actual is \"${!ASSERT_VARIABLE_ACTUAL}\", but expected is \"${!ASSERT_VARIABLE_EXPECTED}\"!"; exit 44; fi;;
+   echo "Actual is \"${!ASSERT_VARIABLE_ACTUAL}\", but expected is \"${!ASSERT_VARIABLE_EXPECTED}\"!"; exit 43; fi;;
  -eqv)
   if test $# -ne 3; then
    echo "Script needs for 3 argument, but actual is $#!"; exit 51; fi
