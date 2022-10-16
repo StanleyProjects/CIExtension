@@ -4,6 +4,8 @@ echo "GitHub diagnostics report..."
 
 . ex/util/require VCS_PAT
 
+. ex/util/assert -s diagnostics/summary.json
+
 REPOSITORY=pages/diagnostics/report
 . ex/util/mkdirs "$REPOSITORY"
 
@@ -14,7 +16,10 @@ REPOSITORY=pages/diagnostics/report
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .clone_url REPOSITORY_CLONE_URL
 
-TYPES="$(jq -Mcer "keys" diagnostics/summary.json)" \
+. ex/util/json -f assemble/vcs/repository/pages.json \
+ -sfs .html_url REPOSITORY_PAGES_HTML_URL
+
+TYPES="$(jq -Mcer keys diagnostics/summary.json)" \
  || . ex/util/throw 21 "Illegal state!"
 if test "$TYPES" == "[]"; then
  . ex/util/throw 22 "Diagnostics should have determined the cause of the failure!"
@@ -45,7 +50,8 @@ git -C "$REPOSITORY" config user.name "$WORKER_NAME" \
 echo "Git commit..."
 git -C "$REPOSITORY" add --all . \
  && git -C "$REPOSITORY" commit -m "$COMMIT_MESSAGE" \
- && git -C "$REPOSITORY" tag "diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID" \
+ && git -C "$REPOSITORY" tag -a "diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID" \
+  -m "${REPOSITORY_PAGES_HTML_URL}build/$RELATIVE_PATH" \
  || . ex/util/throw 42 "Git commit error!"
 
 echo "Git push..."
