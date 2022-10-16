@@ -10,9 +10,12 @@ $SCRIPT; . ex/util/assert -eqv $? 101
 
 export VCS_PAT="$CHECK_VCS_PAT"
 
-$SCRIPT; . ex/util/assert -eqv $? 122
+$SCRIPT; . ex/util/assert -eqv $? 121
 
-VCS_DOMAIN='https://api.github.com'
+. ex/util/mkdirs diagnostics
+echo "$(date +%s)" > diagnostics/summary.json
+
+export VCS_DOMAIN='https://api.github.com'
 CHECK_REPOSITORY_NAME='useless'
 
 . ex/util/mkdirs assemble/vcs/actions
@@ -43,24 +46,36 @@ git -C "$REPOSITORY" init && \
  git -C "$REPOSITORY" checkout FETCH_HEAD || . ex/util/throw 101 "Illegal state!"
 
 JSON_PATH="$REPOSITORY/buildSrc/src/main/resources/json"
-. ex/util/mkdirs diagnostics
-echo "{}" > diagnostics/summary.json
 
+echo "
+bad json..."
+echo 'foo' > diagnostics/summary.json
+$SCRIPT; . ex/util/assert -eqv $? 21
+
+echo "
+empty json..."
+echo '{}' > diagnostics/summary.json
 $SCRIPT; . ex/util/assert -eqv $? 22
 
+echo "
+empty report dir..."
+echo '{"FOO":"foo"}' > diagnostics/summary.json
+$SCRIPT; . ex/util/assert -eqv $? 32
+
+echo "
+no worker..."
 rm -rf pages/diagnostics/report
-
-. ex/kotlin/lib/project/diagnostics/common.sh \
- "$JSON_PATH/verify/common.json"
-
+. ex/util/mkdirs "diagnostics/report/dir$(date +%s)"
 $SCRIPT; . ex/util/assert -eqv $? 122
+
+echo "
+Check success..."
+
+exit 1 # todo
 
 rm -rf pages/diagnostics/report
 
 . ex/util/pipeline ex/github/assemble/worker.sh
-
-echo "
-Check success..."
 
 rm -rf "$REPOSITORY"
 . ex/util/mkdirs "$REPOSITORY"
