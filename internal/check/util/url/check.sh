@@ -27,13 +27,31 @@ echo "
 Check success..."
 
 OUTPUT="/tmp/$(date +%s)"
+rm "$OUTPUT"
 [ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
 
-VCS_DOMAIN='https://api.github.com'
-REPOSITORY_OWNER='StanleyProjects'
-REPOSITORY_NAME='CIExtension'
-$SCRIPT "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" "$OUTPUT"; . ex/util/assert -eqv $? 0
-
+URL_ARGS=(
+ 'foo' "$(date +%s)"
+ 'bar' "$(date +"%Y%m%d%H")"
+ 'baz' 'baz_value'
+)
+[ $((${#URL_ARGS[@]} % 2)) -ne 0 ] && . ex/util/throw 101 "Illegal state!"
+[ $((${#URL_ARGS[@]} / 2)) -eq 0 ] && . ex/util/throw 101 "Illegal state!"
+URL_TARGET="https://postman-echo.com/get"
+URL_ARG_KEY="${URL_ARGS[$((URL_ARG_INDEX * 2 + 0))]}"
+URL_ARG_VALUE="${URL_ARGS[$((URL_ARG_INDEX * 2 + 1))]}"
+URL_TARGET="${URL_TARGET}?${URL_ARG_KEY}=${URL_ARG_VALUE}"
+for ((URL_ARG_INDEX=1; URL_ARG_INDEX<$((${#URL_ARGS[@]} / 2)); URL_ARG_INDEX++)); do
+ URL_ARG_KEY="${URL_ARGS[$((URL_ARG_INDEX * 2 + 0))]}"
+ URL_ARG_VALUE="${URL_ARGS[$((URL_ARG_INDEX * 2 + 1))]}"
+ URL_TARGET="${URL_TARGET}&${URL_ARG_KEY}=${URL_ARG_VALUE}"
+done
+$SCRIPT "$URL_TARGET" "$OUTPUT"; . ex/util/assert -eqv $? 0
 . ex/util/assert -s "$OUTPUT"
-. ex/util/assert -eqv "$(jq -r .name "$OUTPUT")" "$REPOSITORY_NAME"
-. ex/util/assert -eqv "$(jq -r .owner.login "$OUTPUT")" "$REPOSITORY_OWNER"
+
+. ex/util/assert -eqv "$URL_TARGET" "$(jq -Mcer ".url|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+for ((URL_ARG_INDEX=0; URL_ARG_INDEX<$((${#URL_ARGS[@]} / 2)); URL_ARG_INDEX++)); do
+ URL_ARG_KEY="${URL_ARGS[$((URL_ARG_INDEX * 2 + 0))]}"
+ URL_ARG_VALUE="${URL_ARGS[$((URL_ARG_INDEX * 2 + 1))]}"
+ . ex/util/assert -eqv "$URL_ARG_VALUE" "$(jq -Mcer ".args.$URL_ARG_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+done
