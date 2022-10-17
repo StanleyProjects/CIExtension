@@ -7,7 +7,11 @@ TYPES=(
 # "$PREFIX/github/assemble/actions"
 # "$PREFIX/github/assemble/repository"
 # "$PREFIX/github/diagnostics"
- "$PREFIX/github/tag"
+# "$PREFIX/github/tag"
+# "$PREFIX/kotlin/lib/project"
+ "$PREFIX/kotlin/lib/project/assemble"
+# "$PREFIX/kotlin/lib/project/diagnostics"
+# "$PREFIX/kotlin/lib/project/verify"
 # "$PREFIX/notification"
 # "$PREFIX/util"
 )

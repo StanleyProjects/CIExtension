@@ -1,0 +1,78 @@
+#!/bin/bash
+
+if test $# -ne 1; then
+ echo "Script needs for 1 argument, but actual is $#!"; exit 11
+fi
+
+URL_ENVIRONMENT="$1"
+
+URL_BASE="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.url|select((.!=null)and(type=="string")and(.!=""))')"
+if test $? -ne 0; then
+ echo "Url base error!"; exit 21
+elif test -z "$URL_BASE"
+ echo "Url base is empty!"; exit 22
+fi
+
+URL_OUTPUT="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.output|select((.!=null)and(type=="string")and(.!=""))')"
+if test $? -ne 0; then
+ echo "Url output error!"; exit 31
+elif test -z "$URL_OUTPUT"
+ echo "Url output is empty!"; exit 32
+elif test -f "$URL_OUTPUT"
+ echo "Url output \"$URL_OUTPUT\" exists!"; exit 33
+fi
+
+URL_TIMEOUT_CONNECT_DEFAULT=4
+URL_TIMEOUT_CONNECT="$(echo "$URL_ENVIRONMENT" | jq -Mc '.timeout.connect')"
+if test $? -ne 0; then
+ URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT
+elif [[ "$URL_TIMEOUT_CONNECT" =~ ^[1-9][0-9]* ]]; then
+ /bin/true
+else
+ URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT
+fi
+
+URL_TIMEOUT_MAX_DEFAULT=16
+URL_TIMEOUT_MAX="$(echo "$URL_ENVIRONMENT" | jq -Mc '.timeout.max')"
+if test $? -ne 0; then
+ URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
+elif [[ "$URL_TIMEOUT_MAX" =~ ^[1-9][0-9]* ]]; then
+ /bin/true
+else
+ URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
+fi
+
+case "$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|type')" in
+ object)
+  HEADERS_SIZE="$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|keys|length')"
+  if test $? -ne 0; then
+   echo "Headers size error!"; exit 41
+  elif [[ "$HEADERS_SIZE" =~ ^[0-9][0-9]* ]]; then
+   /bin/true
+  else
+   echo "Headers size format error!"; exit 42
+  fi
+ ;;
+ null) HEADERS_SIZE=0;;
+ *) echo "Headers type error!"; exit 43;;
+esac
+
+HEADERS=""
+for ((HEADER_INDEX=0; HEADER_INDEX<$HEADERS_SIZE; HEADER_INDEX++)); do
+ HEADER_KEY="$(echo "$URL_ENVIRONMENT" | jq -Mcr ".headers|keys|.[$HEADER_INDEX]")"
+ HEADER_VALUE="$(echo "$URL_ENVIRONMENT" | jq -Mcer ".headers.$HEADER_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))")"
+ if test $? -ne 0; then
+  echo "Header \"$HEADER_KEY\" error!"; exit 51; fi
+ HEADERS="$HEADERS -H \"$HEADER_KEY: $HEADER_VALUE\""
+done
+
+HTTP_CODE=0
+HTTP_CODE=$(
+ /bin/bash -c "curl -s -w %{http_code}
+  --connect-timeout $URL_TIMEOUT_CONNECT
+  -m $URL_TIMEOUT_MAX
+  -o \"$URL_OUTPUT\" \"$URL_BASE\" $HEADERS")
+if test $HTTP_CODE -ne 200; then
+ echo "Request error with response code \"$HTTP_CODE\"!"
+ exit 91
+fi

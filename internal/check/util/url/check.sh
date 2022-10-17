@@ -1,75 +1,39 @@
 #!/bin/bash
 
+SCRIPT='ex/util/url'
+. ex/util/assert -s "$SCRIPT"
+
 echo "
 Check error..."
 
-EXPECTED=11
 QUERIES=('' '1' '1 2 3')
 for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
- ACTUAL=0
- ex/util/url ${QUERIES[$QUERY_INDEX]}; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((20 + QUERY_INDEX))
- fi
+ $SCRIPT ${QUERIES[$QUERY_INDEX]}; . ex/util/assert -eqv $? 11
 done
 
-EXPECTED=12
 QUERIES=('"" ""' '"" 2' '1 ""')
 for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
- ACTUAL=0
- /bin/bash -c "ex/util/url ${QUERIES[$QUERY_INDEX]}"; ACTUAL=$?
- if test $ACTUAL -ne $EXPECTED; then
-  echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
-  exit $((30 + QUERY_INDEX))
- fi
+ /bin/bash -c "$SCRIPT ${QUERIES[$QUERY_INDEX]}"; . ex/util/assert -eqv $? 12
 done
 
-EXPECTED=21
-ACTUAL=0
-ex/util/url 1 '/'; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 41
-fi
-
-EXPECTED=22
-ACTUAL=0
-ex/util/url 1 2; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 42
-fi
+OUTPUT="/tmp/$(date +%s)"
+touch "$OUTPUT"
+. ex/util/assert -f "$OUTPUT"
+$SCRIPT 1 "$OUTPUT"; . ex/util/assert -eqv $? 21
+rm "$OUTPUT"
+$SCRIPT 1 2; . ex/util/assert -eqv $? 22
 
 echo "
 Check success..."
 
+OUTPUT="/tmp/$(date +%s)"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+
+VCS_DOMAIN='https://api.github.com'
 REPOSITORY_OWNER='StanleyProjects'
 REPOSITORY_NAME='CIExtension'
-OUTPUT="/tmp/$(date +%s)"
-if test -f "OUTPUT"; then
- echo "Destination \"$OUTPUT\" exists!"
- exit 101
-fi
-EXPECTED=0
-ACTUAL=0
-ex/util/url "https://api.github.com/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" "$OUTPUT"; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 51
-fi
+$SCRIPT "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" "$OUTPUT"; . ex/util/assert -eqv $? 0
 
-if [ ! -s "$OUTPUT" ]; then
- echo "Destination does not exist!"
- exit 21
-fi
-
-if test "$(jq -r .name "$OUTPUT")" != "$REPOSITORY_NAME"; then
- echo "Actual repository name error!"
- exit 31
-fi
-
-if test "$(jq -r .owner.login "$OUTPUT")" != "$REPOSITORY_OWNER"; then
- echo "Actual repository owner login error!"
- exit 32
-fi
+. ex/util/assert -s "$OUTPUT"
+. ex/util/assert -eqv "$(jq -r .name "$OUTPUT")" "$REPOSITORY_NAME"
+. ex/util/assert -eqv "$(jq -r .owner.login "$OUTPUT")" "$REPOSITORY_OWNER"
