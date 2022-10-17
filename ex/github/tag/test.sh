@@ -30,15 +30,15 @@ if test $CODE -eq 200; then
    . ex/util/throw 102 "Illegal state!";;
   array)
    REFS=($(jq -Mcer ".[].ref" "assemble/tag${TAG_ENCODED}.json")) || . ex/util/throw 103 "Illegal state!"
-   for ((REF_INDEX = 0; REF_INDEX < ${#REFS[*]}; REF_INDEX++)); do
+   for ((REF_INDEX = 0; REF_INDEX < ${#REFS[@]}; REF_INDEX++)); do
     [ "${REFS[$REF_INDEX]}" == "refs/tags/$TAG" ] \
      && . ex/util/throw $((110 + REF_INDEX + 1)) "The tag \"$TAG\" already exists!"
    done;;
   *) . ex/util/throw 61 "The type \"$TYPE\" is not supported!";;
  esac
-elif test $CODE -eq 404; then
- echo "The tag \"$TAG\" does not exist yet in ${REPOSITORY_HTML_URL}."
-else
+elif test $CODE -ne 404; then
  echo "Get tag \"$TAG\" info error!"
  . ex/util/throw 31 "Request error with response code $CODE!"
 fi
+
+echo "The tag \"$TAG\" does not exist yet in ${REPOSITORY_HTML_URL}."

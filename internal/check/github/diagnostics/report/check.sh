@@ -111,7 +111,15 @@ TAG="diagnostics/report/$CI_BUILD_NUMBER/$CI_BUILD_ID"
 rm -rf pages/diagnostics/report
 $SCRIPT || . ex/util/throw 101 "Illegal state!"
 
-ex/github/tag/test.sh "$TAG" && . ex/util/throw 101 "Illegal state!"
+TRY_NUMBER=1
+TRY_MAX=10
+while :; do
+ echo "try [${TRY_NUMBER}/$TRY_MAX]..."
+ ex/github/tag/test.sh "$TAG" || break
+ [ $TRY_NUMBER -gt $TRY_MAX ] && . ex/util/throw 102 "The maximum number of attempts ($TRY_MAX) has been reached!"
+ sleep 2
+ TRY_NUMBER=$((TRY_NUMBER + 1))
+done
 
 rm -rf "$REPOSITORY"
 . ex/util/mkdirs "$REPOSITORY"

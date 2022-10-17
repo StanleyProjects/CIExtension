@@ -43,6 +43,7 @@ echo "
 Check success..."
 
 QUERIES=('test/2' 'test/222')
+QUERIES_SIZE=${#QUERIES[@]}
 for ((QUERY_INDEX=0; QUERY_INDEX<$QUERIES_SIZE; QUERY_INDEX++)); do
  TAG="${QUERIES[$QUERY_INDEX]}"
  echo "test tag [$((QUERY_INDEX + 1))/$QUERIES_SIZE] \"$TAG\"..."
@@ -53,6 +54,7 @@ for ((QUERY_INDEX=0; QUERY_INDEX<$QUERIES_SIZE; QUERY_INDEX++)); do
 done
 
 QUERIES=('code' 'code/style' 'code/quality')
+QUERIES_SIZE=${#QUERIES[@]}
 for ((QUERY_INDEX=0; QUERY_INDEX<$QUERIES_SIZE; QUERY_INDEX++)); do
  TAG="${QUERIES[$QUERY_INDEX]}"
  echo "test tag [$((QUERY_INDEX + 1))/$QUERIES_SIZE] \"$TAG\"..."

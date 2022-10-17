@@ -3,7 +3,12 @@
 PREFIX='ex'
 TYPES=(
 # "$PREFIX/github"
- "$PREFIX/notification"
+# "$PREFIX/github/assemble"
+# "$PREFIX/github/assemble/actions"
+# "$PREFIX/github/assemble/repository"
+# "$PREFIX/github/diagnostics"
+ "$PREFIX/github/tag"
+# "$PREFIX/notification"
 # "$PREFIX/util"
 )
 #TYPES=($(echo "$PREFIX/*"))
