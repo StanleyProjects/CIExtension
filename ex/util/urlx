@@ -64,6 +64,26 @@ else
  esac
 fi
 
+URL_CODE_EXPECTED_DEFAULT=200
+URL_CODE_EXPECTED_TYPE="$(echo "$URL_ENVIRONMENT" | jq -Mcr '.code.expected|type')"
+if test $? -ne 0; then
+ echo "Url code expected type error!"; exit 131
+else
+ case "$URL_CODE_EXPECTED_TYPE" in
+  number)
+   URL_CODE_EXPECTED="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.code.expected|select((.!=null)and(type=="number"))')"
+   if test $? -ne 0; then
+    echo "Url code expected error!"; exit 133
+   elif [[ "$URL_CODE_EXPECTED" =~ ^[1-9][0-9]*$ ]]; then
+    /bin/true
+   else
+    echo "Url code expected format error!"; exit 134; fi
+  ;;
+  null) URL_CODE_EXPECTED=$URL_CODE_EXPECTED_DEFAULT;;
+  *) echo "Url code expected type \"$URL_CODE_EXPECTED_TYPE\" is not supported!"; exit 132;;
+ esac
+fi
+
 HEADERS_TYPE="$(echo "$URL_ENVIRONMENT" | jq -Mcr '.headers|type')"
 case "$HEADERS_TYPE" in
  object) HEADERS_SIZE=$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|keys|length');;
@@ -86,7 +106,7 @@ HTTP_CODE=$(
   --connect-timeout $URL_TIMEOUT_CONNECT \
   -m $URL_TIMEOUT_MAX \
   -o \"$URL_OUTPUT\" \"$URL_BASE\" $HEADERS")
-if test $HTTP_CODE -ne 200; then
+if test $HTTP_CODE -ne $URL_CODE_EXPECTED; then
  echo "Request error with response code \"$HTTP_CODE\"!"
  exit 91
 fi

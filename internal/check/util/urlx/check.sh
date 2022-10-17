@@ -60,6 +60,18 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
 done
 . ex/util/json_merge -v CHECK_ENVIRONMENT '.timeout.max=16'
 
+QUERIES=('""' '"foo"' 'true' 'false' '{}' '[]')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ . ex/util/json_merge -v CHECK_ENVIRONMENT ".code.expected=${QUERIES[$QUERY_INDEX]}"
+ $SCRIPT "$CHECK_ENVIRONMENT"; . ex/util/assert -eqv $? 132
+done
+QUERIES=('0' '-1' '-42' '1.2' '-3.4' '0.')
+for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+ . ex/util/json_merge -v CHECK_ENVIRONMENT ".code.expected=${QUERIES[$QUERY_INDEX]}"
+ $SCRIPT "$CHECK_ENVIRONMENT"; . ex/util/assert -eqv $? 134
+done
+. ex/util/json_merge -v CHECK_ENVIRONMENT '.code.expected=200'
+
 QUERIES=('""' '"foo"' '1' 'true' 'false' '[]')
 for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
  . ex/util/json_merge -v CHECK_ENVIRONMENT ".headers=${QUERIES[$QUERY_INDEX]}"
