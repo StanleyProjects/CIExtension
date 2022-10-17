@@ -1,6 +1,6 @@
 from kepocnhh/debian-amd64:3
 
-copy ex/util/urlx ex/util/urlx
+copy ex/util ex/util
 copy internal/check/util/urlx/check.sh .
 
 cmd ./check.sh

@@ -5,56 +5,70 @@ if test $# -ne 1; then
 fi
 
 URL_ENVIRONMENT="$1"
+if test -z "$URL_ENVIRONMENT"; then
+ echo "Url environment is empty!"; exit 12; fi
 
 URL_BASE="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.url|select((.!=null)and(type=="string")and(.!=""))')"
 if test $? -ne 0; then
  echo "Url base error!"; exit 21
-elif test -z "$URL_BASE"
+elif test -z "$URL_BASE"; then
  echo "Url base is empty!"; exit 22
 fi
 
 URL_OUTPUT="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.output|select((.!=null)and(type=="string")and(.!=""))')"
 if test $? -ne 0; then
  echo "Url output error!"; exit 31
-elif test -z "$URL_OUTPUT"
+elif test -z "$URL_OUTPUT"; then
  echo "Url output is empty!"; exit 32
-elif test -f "$URL_OUTPUT"
+elif test -f "$URL_OUTPUT"; then
  echo "Url output \"$URL_OUTPUT\" exists!"; exit 33
 fi
 
 URL_TIMEOUT_CONNECT_DEFAULT=4
-URL_TIMEOUT_CONNECT="$(echo "$URL_ENVIRONMENT" | jq -Mc '.timeout.connect')"
+URL_TIMEOUT_CONNECT_TYPE="$(echo "$URL_ENVIRONMENT" | jq -Mcr '.timeout.connect|type')"
 if test $? -ne 0; then
- URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT
-elif [[ "$URL_TIMEOUT_CONNECT" =~ ^[1-9][0-9]* ]]; then
- /bin/true
+ echo "Url timeout connect type error!"; exit 111
 else
- URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT
+ case "$URL_TIMEOUT_CONNECT_TYPE" in
+  number)
+   URL_TIMEOUT_CONNECT="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.timeout.connect|select((.!=null)and(type=="number"))')"
+   if test $? -ne 0; then
+    echo "Url timeout connect error!"; exit 113
+   elif [[ "$URL_TIMEOUT_CONNECT" =~ ^[1-9][0-9]*$ ]]; then
+    /bin/true
+   else
+    echo "Url timeout connect format error!"; exit 114; fi
+  ;;
+  null) URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT;;
+  *) echo "Url timeout connect type \"$URL_TIMEOUT_CONNECT_TYPE\" is not supported!"; exit 112;;
+ esac
 fi
 
 URL_TIMEOUT_MAX_DEFAULT=16
-URL_TIMEOUT_MAX="$(echo "$URL_ENVIRONMENT" | jq -Mc '.timeout.max')"
+URL_TIMEOUT_MAX_TYPE="$(echo "$URL_ENVIRONMENT" | jq -Mcr '.timeout.max|type')"
 if test $? -ne 0; then
- URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
-elif [[ "$URL_TIMEOUT_MAX" =~ ^[1-9][0-9]* ]]; then
- /bin/true
+ echo "Url timeout max type error!"; exit 121
 else
- URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
+ case "$URL_TIMEOUT_MAX_TYPE" in
+  number)
+   URL_TIMEOUT_MAX="$(echo "$URL_ENVIRONMENT" | jq -Mcer '.timeout.max|select((.!=null)and(type=="number"))')"
+   if test $? -ne 0; then
+    echo "Url timeout max error!"; exit 123
+   elif [[ "$URL_TIMEOUT_MAX" =~ ^[1-9][0-9]*$ ]]; then
+    /bin/true
+   else
+    echo "Url timeout max format error!"; exit 124; fi
+  ;;
+  null) URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT;;
+  *) echo "Url timeout max type \"$URL_TIMEOUT_MAX_TYPE\" is not supported!"; exit 122;;
+ esac
 fi
 
-case "$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|type')" in
- object)
-  HEADERS_SIZE="$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|keys|length')"
-  if test $? -ne 0; then
-   echo "Headers size error!"; exit 41
-  elif [[ "$HEADERS_SIZE" =~ ^[0-9][0-9]* ]]; then
-   /bin/true
-  else
-   echo "Headers size format error!"; exit 42
-  fi
- ;;
+HEADERS_TYPE="$(echo "$URL_ENVIRONMENT" | jq -Mcr '.headers|type')"
+case "$HEADERS_TYPE" in
+ object) HEADERS_SIZE=$(echo "$URL_ENVIRONMENT" | jq -Mc '.headers|keys|length');;
  null) HEADERS_SIZE=0;;
- *) echo "Headers type error!"; exit 43;;
+ *) echo "Headers type \"$HEADERS_TYPE\" is not supported!"; exit 41;;
 esac
 
 HEADERS=""
@@ -62,15 +76,15 @@ for ((HEADER_INDEX=0; HEADER_INDEX<$HEADERS_SIZE; HEADER_INDEX++)); do
  HEADER_KEY="$(echo "$URL_ENVIRONMENT" | jq -Mcr ".headers|keys|.[$HEADER_INDEX]")"
  HEADER_VALUE="$(echo "$URL_ENVIRONMENT" | jq -Mcer ".headers.$HEADER_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))")"
  if test $? -ne 0; then
-  echo "Header \"$HEADER_KEY\" error!"; exit 51; fi
+  echo "Header \"$HEADER_KEY\" error!"; exit $((130 + HEADER_INDEX + 1)); fi
  HEADERS="$HEADERS -H \"$HEADER_KEY: $HEADER_VALUE\""
 done
 
 HTTP_CODE=0
 HTTP_CODE=$(
- /bin/bash -c "curl -s -w %{http_code}
-  --connect-timeout $URL_TIMEOUT_CONNECT
-  -m $URL_TIMEOUT_MAX
+ /bin/bash -c "curl -s -w %{http_code} \
+  --connect-timeout $URL_TIMEOUT_CONNECT \
+  -m $URL_TIMEOUT_MAX \
   -o \"$URL_OUTPUT\" \"$URL_BASE\" $HEADERS")
 if test $HTTP_CODE -ne 200; then
  echo "Request error with response code \"$HTTP_CODE\"!"
