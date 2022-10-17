@@ -6,15 +6,12 @@ echo "Assemble GitHub worker..."
 
 . ex/util/mkdirs assemble/vcs
 
-CODE=0
-CODE=$(curl -s -w %{http_code} -o assemble/vcs/worker.json \
- "$VCS_DOMAIN/user" \
- -H "Authorization: token $VCS_PAT")
-if test $CODE -ne 200; then
- echo "Get worker error!"
- echo "Request error with response code $CODE!"
- exit 11
-fi
+ENVIRONMENT='{}'
+. ex/util/json_merge -v ENVIRONMENT \
+ ".url=\"$VCS_DOMAIN/user\"" \
+ '.output="assemble/vcs/worker.json"' \
+ ".headers.Authorization=\"token $VCS_PAT\""
+. ex/util/urlx "$ENVIRONMENT"
 
 . ex/util/json -f assemble/vcs/worker.json \
  -si .id WORKER_ID \
