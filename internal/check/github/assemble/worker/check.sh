@@ -20,11 +20,11 @@ mkdir -p assemble/vcs
 $SCRIPT; . ex/util/assert -eqv $? 0
 
 RESULT="/tmp/$(date +%s)"
-[ -f "$RESULT" ] && . ex/util/throw "Illegal state!"
+[ -f "$RESULT" ] && . ex/util/throw 101 "Illegal state!"
 
 curl -f -w %{http_code} -o "$RESULT" "$VCS_DOMAIN/user" \
  -H "Authorization: token $CHECK_VCS_PAT" \
- || . ex/util/throw "Illegal state!"
+ || . ex/util/throw 101 "Illegal state!"
 
 ARTIFACT='assemble/vcs/worker.json'
 . ex/util/assert -s "$ARTIFACT"

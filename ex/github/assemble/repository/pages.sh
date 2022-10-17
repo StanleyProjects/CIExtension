@@ -10,16 +10,12 @@ echo "Assemble GitHub repository pages..."
 
 . ex/util/mkdirs assemble/vcs/repository
 
-CODE=0
-CODE=$(curl -s -w %{http_code} -o assemble/vcs/repository/pages.json \
- "$REPOSITORY_URL/pages" \
- -H "Authorization: token $VCS_PAT")
-if test $CODE -ne 200; then
- echo "Get pages $REPOSITORY_HTML_URL error!"
- echo "Request error with response code $CODE!"
- exit 21
-fi
-
+ENVIRONMENT='{}'
+. ex/util/json_merge -v ENVIRONMENT \
+ ".url=\"$REPOSITORY_URL/pages\"" \
+ '.output="assemble/vcs/repository/pages.json"' \
+ ".headers.Authorization=\"token $VCS_PAT\""
+ex/util/urlx "$ENVIRONMENT" || . ex/util/throw 21 "Get pages $REPOSITORY_HTML_URL error!"
 
 . ex/util/json -f assemble/vcs/repository/pages.json \
  -sfs .html_url REPOSITORY_PAGES_HTML_URL
