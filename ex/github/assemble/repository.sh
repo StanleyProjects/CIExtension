@@ -6,8 +6,8 @@ echo "Assemble GitHub repository..."
 
 . ex/util/mkdirs assemble/vcs
 
-ex/util/url "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" \
- assemble/vcs/repository.json \
+ex/util/url -u "$VCS_DOMAIN/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME" \
+ -o assemble/vcs/repository.json \
  || . ex/util/throw 21 "Get repository \"$REPOSITORY_NAME\" error!"
 
 . ex/util/json -f assemble/vcs/repository.json \

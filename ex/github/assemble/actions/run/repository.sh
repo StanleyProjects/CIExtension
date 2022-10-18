@@ -8,8 +8,8 @@ echo "Assemble GitHub actions run repository..."
 
 . ex/util/mkdirs assemble/vcs
 
-ex/util/url "$REPOSITORY_URL" \
- assemble/vcs/repository.json \
+ex/util/url -u "$REPOSITORY_URL" \
+ -o assemble/vcs/repository.json \
  || . ex/util/throw 21 "Get repository \"$REPOSITORY_NAME\" error!"
 
 . ex/util/json -f assemble/vcs/repository.json \

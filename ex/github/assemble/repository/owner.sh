@@ -7,8 +7,8 @@ echo "Assemble GitHub repository owner..."
 
 . ex/util/mkdirs assemble/vcs/repository
 
-ex/util/url "$REPOSITORY_OWNER_URL" \
- assemble/vcs/repository/owner.json \
+ex/util/url -u "$REPOSITORY_OWNER_URL" \
+ -o assemble/vcs/repository/owner.json \
  || . ex/util/throw 21 "Get repository owner $REPOSITORY_OWNER_URL error!"
 
 . ex/util/json -f assemble/vcs/repository/owner.json \
