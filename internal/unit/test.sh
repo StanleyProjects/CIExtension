@@ -1,42 +1,17 @@
 #!/bin/bash
 
 PREFIX='ex'
-TYPES=(
-# "$PREFIX/github"
-# "$PREFIX/github/assemble"
-# "$PREFIX/github/assemble/actions"
-# "$PREFIX/github/assemble/repository"
-# "$PREFIX/github/diagnostics"
-# "$PREFIX/github/tag"
-# "$PREFIX/kotlin/lib/project"
- "$PREFIX/kotlin/lib/project/assemble"
-# "$PREFIX/kotlin/lib/project/diagnostics"
-# "$PREFIX/kotlin/lib/project/verify"
-# "$PREFIX/notification"
-# "$PREFIX/util"
-)
-#TYPES=($(echo "$PREFIX/*"))
-for ((TYPE_INDEX=0; TYPE_INDEX<${#TYPES[@]}; TYPE_INDEX++)); do
- SCRIPTS=($(find "${TYPES[$TYPE_INDEX]}" -type f))
- SIZE=${#SCRIPTS[@]}
- for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
-  SCRIPT="${SCRIPTS[$SCRIPT_INDEX]}"
-  EXPRESSION="^$PREFIX/"
-  if [[ "$SCRIPT" =~ $EXPRESSION ]]; then
-   RELATIVE="${SCRIPT/"$PREFIX"\//}"
-  else
-   exit 1 #todo
-  fi
-  EXPRESSION="\.sh$"
-  if [[ "$RELATIVE" =~ $EXPRESSION ]]; then
-   RELATIVE="${RELATIVE/".sh"/}"
-  fi
-  SCRIPT_CHECK="internal/check/$RELATIVE/build.sh"
-  if test -s "$SCRIPT_CHECK"; then
-   echo "Check $((SCRIPT_INDEX + 1))/$SIZE \"$RELATIVE\"..."
-   $SCRIPT_CHECK || exit 21
-  else
-   echo "Script check \"$SCRIPT_CHECK\" does not exist!"; exit 22
-  fi
- done
+SCRIPTS=($(find "$PREFIX" -type f))
+SIZE=${#SCRIPTS[@]}
+for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
+ SCRIPT="${SCRIPTS[$SCRIPT_INDEX]}"
+ if [[ ! "$SCRIPT" =~ ^$PREFIX/ ]]; then
+  echo "Script format error!"; exit $((20 + SCRIPT_INDEX + 1)); fi
+ RELATIVE="${SCRIPT/$PREFIX\//}"
+ [[ "$RELATIVE" =~ .sh$ ]] && RELATIVE="${RELATIVE/.sh/}"
+ SCRIPT_CHECK="internal/check/$RELATIVE/build.sh"
+ if [ ! -s "$SCRIPT_CHECK" ]; then
+  echo "Script check \"$SCRIPT_CHECK\" does not exist!"; exit $((60 + SCRIPT_INDEX + 1)); fi
+ echo "Check [$((SCRIPT_INDEX + 1))/$SIZE] \"$PREFIX/$RELATIVE\"..."
+ $SCRIPT_CHECK || exit $((100 + SCRIPT_INDEX + 1))
 done

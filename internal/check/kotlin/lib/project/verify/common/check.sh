@@ -15,7 +15,7 @@ REPOSITORY=repository
 
 JSON_FILE="/tmp/$(date +%s)"
 [ -f "$JSON_FILE" ] && . ex/util/throw 101 "File \"$JSON_FILE\" exists!"
-$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 122
+$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 121
 
 export VCS_DOMAIN='https://api.github.com'
 export REPOSITORY_OWNER='kepocnhh'
@@ -65,8 +65,8 @@ gradle -p "$REPOSITORY" "$(jq -Mcer ".${KEY_NAME}.task" "${JSON_FILE}.success")"
 
 [ -f "${JSON_FILE}.not" ] && . ex/util/throw 101 "File \"${JSON_FILE}.not\" exists!"
 
-$SCRIPT "${JSON_FILE}.not" "${JSON_FILE}.success"; . ex/util/assert -eqv $? 122
-$SCRIPT "${JSON_FILE}.success" "${JSON_FILE}.not"; . ex/util/assert -eqv $? 122
+$SCRIPT "${JSON_FILE}.not" 'bar'; . ex/util/assert -eqv $? 121
+$SCRIPT "${JSON_FILE}.success" "${JSON_FILE}.not"; . ex/util/assert -eqv $? 121
 gradle -p "$REPOSITORY" "$(jq -Mcer '.CODE_STYLE.task' "$JSON_FILE")" \
  && . ex/util/throw 101 "Gradle success!"
 $SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 113
@@ -75,6 +75,6 @@ $SCRIPT "${JSON_FILE}.success" "$JSON_FILE"; . ex/util/assert -eqv $? 123
 echo "
 Check success..."
 
-. $SCRIPT "${JSON_FILE}.success"
+$SCRIPT "${JSON_FILE}.success"; . ex/util/assert -eqv $? 0
 
 exit 0
