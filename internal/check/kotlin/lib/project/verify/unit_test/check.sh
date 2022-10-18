@@ -14,7 +14,7 @@ REPOSITORY=repository
 JSON_PATH="$REPOSITORY/buildSrc/src/main/resources/json"
 JSON_FILE="$JSON_PATH/verify/unit_test.json"
 [ -f "$JSON_FILE" ] && . ex/util/throw 101 "File \"$JSON_FILE\" exists!"
-$SCRIPT; . ex/util/assert -eqv $? 122
+$SCRIPT; . ex/util/assert -eqv $? 121
 
 export VCS_DOMAIN='https://api.github.com'
 export REPOSITORY_OWNER='kepocnhh'
@@ -39,7 +39,7 @@ git -C "$REPOSITORY" init \
 . ex/util/assert -s "$JSON_FILE"
 rm "$JSON_FILE"
 [ -f "$JSON_FILE" ] && . ex/util/throw 103 "File \"$JSON_FILE\" exists!"
-$SCRIPT; . ex/util/assert -eqv $? 122
+$SCRIPT; . ex/util/assert -eqv $? 121
 
 echo 'foo' > "$JSON_FILE"
 $SCRIPT; . ex/util/assert -eqv $? 42
@@ -96,6 +96,6 @@ git -C "$REPOSITORY" init \
  && git -C "$REPOSITORY" checkout FETCH_HEAD \
  || . ex/util/throw 106 "Illegal state!"
 
-. $SCRIPT
+$SCRIPT; . ex/util/assert -eqv $? 0
 
 exit 0
