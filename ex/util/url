@@ -34,7 +34,7 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    if test -z "$URL_OUTPUT"; then
     echo "Url output is empty!"; exit $((80 + RELATIVE_INDEX + 1))
    elif test -f "$URL_OUTPUT"; then
-    echo "Url \"$URL_OUTPUT\" exists!"; exit $((90 + RELATIVE_INDEX + 1))
+    echo "Url output \"$URL_OUTPUT\" exists!"; exit $((90 + RELATIVE_INDEX + 1))
    fi
   ;;
   -e)

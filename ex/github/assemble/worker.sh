@@ -8,7 +8,7 @@ echo "Assemble GitHub worker..."
 
 ex/util/url -u "$VCS_DOMAIN/user" \
  -o assemble/vcs/worker.json \
- -h "Authorization: token $VCS_PAT"
+ -h "Authorization: token $VCS_PAT" \
  || . ex/util/throw 21 "Get worker error!"
 
 . ex/util/json -f assemble/vcs/worker.json \
