@@ -15,7 +15,7 @@ REPOSITORY=repository
 
 JSON_FILE="/tmp/$(date +%s)"
 [ -f "$JSON_FILE" ] && . ex/util/throw 101 "File \"$JSON_FILE\" exists!"
-$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 122
+$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 121
 
 export VCS_DOMAIN='https://api.github.com'
 export REPOSITORY_OWNER='kepocnhh'
@@ -41,7 +41,7 @@ git -C "$REPOSITORY" init \
 
 JSON_FILE="$JSON_PATH/verify/common.json"
 . ex/util/assert -s "$JSON_FILE"
-$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 122
+$SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 121
 
 echo "
 Check success..."
