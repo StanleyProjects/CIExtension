@@ -12,7 +12,7 @@ echo "Assemble GitHub repository pages..."
 
 ex/util/url -u "$REPOSITORY_URL/pages" \
  -o assemble/vcs/repository/pages.json \
- -h "Authorization: token $VCS_PAT"
+ -h "Authorization: token $VCS_PAT" \
  || . ex/util/throw 21 "Get pages $REPOSITORY_HTML_URL error!"
 
 . ex/util/json -f assemble/vcs/repository/pages.json \

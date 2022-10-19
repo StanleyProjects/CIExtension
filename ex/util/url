@@ -34,13 +34,13 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    if test -z "$URL_OUTPUT"; then
     echo "Url output is empty!"; exit $((80 + RELATIVE_INDEX + 1))
    elif test -f "$URL_OUTPUT"; then
-    echo "Url \"$URL_OUTPUT\" exists!"; exit $((90 + RELATIVE_INDEX + 1))
+    echo "Url output \"$URL_OUTPUT\" exists!"; exit $((90 + RELATIVE_INDEX + 1))
    fi
   ;;
   -e)
    if [ ! -z "$URL_CODE_EXPECTED" ]; then
-    echo "Url code expected already set!"; exit $((100 + RELATIVE_INDEX + 1)); fi
-   if [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Url code expected already set!"; exit $((100 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
     URL_CODE_EXPECTED="${!URL_VALUE_INDEX}"
    else
     echo "Url code expected format error!"; exit $((110 + RELATIVE_INDEX + 1))
@@ -48,8 +48,8 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
   ;;
   -c)
    if [ ! -z "$URL_TIMEOUT_CONNECT" ]; then
-    echo "Url timeout connect already set!"; exit $((120 + RELATIVE_INDEX + 1)); fi
-   if [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Url timeout connect already set!"; exit $((120 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
     URL_TIMEOUT_CONNECT="${!URL_VALUE_INDEX}"
    else
     echo "Url timeout connect format error!"; exit $((130 + RELATIVE_INDEX + 1))
@@ -57,8 +57,8 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
   ;;
   -m)
    if [ ! -z "$URL_TIMEOUT_MAX" ]; then
-    echo "Url timeout max already set!"; exit $((140 + RELATIVE_INDEX + 1)); fi
-   if [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Url timeout max already set!"; exit $((140 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
     URL_TIMEOUT_MAX="${!URL_VALUE_INDEX}"
    else
     echo "Url timeout max format error!"; exit $((150 + RELATIVE_INDEX + 1))
@@ -75,9 +75,10 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
 done
 
 if test -z "$URL_BASE"; then
- echo "Url is empty!"; exit 21; fi
-if test -z "$URL_OUTPUT"; then
- echo "Url output is empty!"; exit 22; fi
+ echo "Url is empty!"; exit 21
+elif test -z "$URL_OUTPUT"; then
+ echo "Url output is empty!"; exit 22
+fi
 
 if test -z "$URL_CODE_EXPECTED"; then
  URL_CODE_EXPECTED=$URL_CODE_EXPECTED_DEFAULT

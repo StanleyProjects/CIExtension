@@ -21,5 +21,5 @@ cp "$ARTIFACT" assemble/project/common.json
  -sfs .owner.login REPOSITORY_OWNER_LOGIN \
  -sfs .name REPOSITORY_NAME
 
-. ex/util/assert -eq REPOSITORY_OWNER_LOGIN ACTUAL_OWNER
-. ex/util/assert -eq REPOSITORY_NAME ACTUAL_NAME
+. ex/util/assert -eq ACTUAL_OWNER REPOSITORY_OWNER_LOGIN
+. ex/util/assert -eq ACTUAL_NAME REPOSITORY_NAME

@@ -1,102 +1,50 @@
 #!/bin/bash
 
+SCRIPT='ex/github/assemble/actions/run.sh'
+. ex/util/assert -s "$SCRIPT"
+
 echo "
 Check error..."
 
-EXPECTED=101
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 101
-fi
+$SCRIPT; . ex/util/assert -eqv $? 101
+
 export VCS_DOMAIN='1'
-EXPECTED=102
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 102
-fi
+$SCRIPT; . ex/util/assert -eqv $? 102
+
 export REPOSITORY_OWNER='2'
-EXPECTED=103
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 103
-fi
+$SCRIPT; . ex/util/assert -eqv $? 103
+
 export REPOSITORY_NAME='3'
-EXPECTED=104
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 104
-fi
+$SCRIPT; . ex/util/assert -eqv $? 104
 
 export CI_BUILD_ID='a'
-EXPECTED=21
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 104
-fi
+$SCRIPT; . ex/util/assert -eqv $? 21
 
+ARTIFACT='assemble/vcs/actions/run.json'
+[ -f "$ARTIFACT" ] && . ex/util/throw 102 "File \"$ARTIFACT\" exists!"
 VCS_DOMAIN='https://api.github.com'
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 105
-fi
+$SCRIPT; . ex/util/assert -eqv $? 21
+. ex/util/assert -s "$ARTIFACT"
 
+rm "$ARTIFACT"
+[ -f "$ARTIFACT" ] && . ex/util/throw 102 "File \"$ARTIFACT\" exists!"
 REPOSITORY_OWNER='kepocnhh'
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 105
-fi
+$SCRIPT; . ex/util/assert -eqv $? 21
 
+rm "$ARTIFACT"
+[ -f "$ARTIFACT" ] && . ex/util/throw 102 "File \"$ARTIFACT\" exists!"
 REPOSITORY_NAME='useless'
-ACTUAL=0
-ex/github/assemble/actions/run.sh; ACTUAL=$?
-if test $ACTUAL -ne $EXPECTED; then
- echo "Actual code is \"$ACTUAL\", but expected is \"$EXPECTED\"!"
- exit 105
-fi
 
 echo "
 Check success..."
 
 CI_BUILD_ID=2989462289
 
-. ex/github/assemble/actions/run.sh
+$SCRIPT; . ex/util/assert -eqv $? 0
+. ex/util/assert -s "$ARTIFACT"
+. ex/util/assert -eqv "$(jq -r .repository.name "$ARTIFACT")" "$REPOSITORY_NAME"
+. ex/util/assert -eqv "$(jq -r .repository.owner.login "$ARTIFACT")" "$REPOSITORY_OWNER"
+. ex/util/assert -eqv "$(jq .id "$ARTIFACT")" "$CI_BUILD_ID"
+. ex/util/assert -eqv "$(jq .run_number "$ARTIFACT")" 56
 
-ARTIFACT='assemble/vcs/actions/run.json'
-if [ ! -s "$ARTIFACT" ]; then
- echo "File does not exist!"
- exit 21
-fi
-
-if test "$(jq -r .repository.name "$ARTIFACT")" != "$REPOSITORY_NAME"; then
- echo "Actual repository name error!"
- exit 31
-fi
-
-if test "$(jq -r .repository.owner.login "$ARTIFACT")" != "$REPOSITORY_OWNER"; then
- echo "Actual repository owner login error!"
- exit 32
-fi
-
-if test "$(jq .id "$ARTIFACT")" != "$CI_BUILD_ID"; then
- echo "Actual ID error!"
- exit 33
-fi
-
-if test "$(jq .run_number "$ARTIFACT")" != '56'; then
- echo "Actual run number error!"
- exit 34
-fi
+exit 0

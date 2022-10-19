@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Project diagnostics common..."
+echo "Project diagnostics unit test..."
 
 REPOSITORY=repository
 . ex/util/assert -d "$REPOSITORY"
@@ -55,9 +55,9 @@ else
 fi
 
 TYPES="$(jq -Mcer "keys" diagnostics/summary.json)" \
- || . ex/util/throw 21 "Illegal state!"
+ || . ex/util/throw 41 "Illegal state!"
 if test "$TYPES" == "[]"; then
- echo "Diagnostics should have determined the cause of the failure!"; exit 0
+ echo "Diagnostics should have determined the cause of the failure!"
+else
+ echo "Diagnostics have determined the cause of the failure - this is: $TYPES."
 fi
-
-echo "Diagnostics have determined the cause of the failure - this is: $TYPES."
