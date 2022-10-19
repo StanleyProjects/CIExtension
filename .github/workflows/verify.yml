@@ -38,6 +38,11 @@ jobs:
            echo "CHECK_TELEGRAM_BOT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)" >> "$it/env" && \
            echo "CHECK_TELEGRAM_BOT_TOKEN=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)" >> "$it/env" && \
            echo "CHECK_TELEGRAM_CHAT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)" >> "$it/env" || exit 1; done
+      - run: |
+          docker stop $(docker ps -aq); \
+          docker rm $(docker ps -aq); \
+          docker rmi $(docker images -aq); \
+          echo 'docker ok'
       - working-directory: repository
         run: |
           internal/unit/test/coverage.sh

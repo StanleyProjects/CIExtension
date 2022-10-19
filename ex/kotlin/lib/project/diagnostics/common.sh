@@ -33,7 +33,7 @@ for ((ARG_NUMBER=1; ARG_NUMBER<=$#; ARG_NUMBER++)); do
    . ex/util/mkdirs "diagnostics/report/$RELATIVE"
    . ex/util/assert -d "$REPOSITORY/$REPORT"
    cp -r $REPOSITORY/$REPORT/* "diagnostics/report/$RELATIVE" \
-    || . ex/util/throw 21 "Illegal state!"
+    || . ex/util/throw 41 "Illegal state!"
    . ex/util/json_merge -f diagnostics/summary.json \
     ".$TYPE.path=\"$RELATIVE\"" \
     ".$TYPE.title=\"$TITLE\""

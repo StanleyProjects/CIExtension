@@ -14,7 +14,7 @@ REPOSITORY=repository
 . ex/util/mkdirs "$REPOSITORY"
 
 JSON_FILE="/tmp/$(date +%s)"
-[ -f "$JSON_FILE" ] && . ex/util/throw 101 "File \"$JSON_FILE\" exists!"
+[ -f "$JSON_FILE" ] && . ex/util/throw 102 "File \"$JSON_FILE\" exists!"
 $SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 121
 
 export VCS_DOMAIN='https://api.github.com'
@@ -54,8 +54,10 @@ QUERIES=(
  'a8b0791820a4d22b80bb1a2d7e1ecc2182a26354' 'info' '["LICENSE","README"]'
  'ea5c3000794cad3a469b23b16343e7934a9bf176' 'documentation' '["DOCUMENTATION"]'
 )
-for ((QUERY_INDEX=0; QUERY_INDEX<$((${#QUERIES[@]} / 3)); QUERY_INDEX++)); do
- echo "check [$QUERY_INDEX/$((${#QUERIES[@]} / 3))]..."
+QUERIES_SIZE=$((${#QUERIES[@]} / 3))
+for ((QUERY_INDEX=0; QUERY_INDEX<$QUERIES_SIZE; QUERY_INDEX++)); do
+ QUERY_EXPECTED="${QUERIES[$((QUERY_INDEX * 3 + 2))]}"
+ echo "check [$((QUERY_INDEX + 1))/$QUERIES_SIZE] ${QUERY_EXPECTED}..."
  rm -rf "$REPOSITORY"
  . ex/util/mkdirs "$REPOSITORY"
  git -C "$REPOSITORY" init \
@@ -63,13 +65,17 @@ for ((QUERY_INDEX=0; QUERY_INDEX<$((${#QUERIES[@]} / 3)); QUERY_INDEX++)); do
   && git -C "$REPOSITORY" fetch --depth=1 origin "${QUERIES[$((QUERY_INDEX * 3))]}" \
   && git -C "$REPOSITORY" checkout FETCH_HEAD \
   || . ex/util/throw 101 "Illegal state!"
+ [ -f "$REPOSITORY/gradle.properties" ] && . ex/util/throw 102 "File exists!"
+ touch "$REPOSITORY/gradle.properties"
+ echo 'org.gradle.jvmargs=-Xmx2g' >> "$REPOSITORY/gradle.properties"
+ echo 'org.gradle.parallel=true' >> "$REPOSITORY/gradle.properties"
  . ex/util/mkdirs diagnostics
  ARTIFACT=diagnostics/summary.json
  echo '{}' > "$ARTIFACT"
  JSON_FILE="$JSON_PATH/verify/${QUERIES[$((QUERY_INDEX * 3 + 1))]}.json"
  . ex/util/assert -s "$JSON_FILE"
  $SCRIPT "$JSON_FILE"; . ex/util/assert -eqv $? 0
- . ex/util/assert -eqv "$(jq -Mcer keys "$ARTIFACT")" "${QUERIES[$((QUERY_INDEX * 3 + 2))]}"
+ . ex/util/assert -eqv "$(jq -Mcer keys "$ARTIFACT")" "$QUERY_EXPECTED"
 done
 
 rm -rf "$REPOSITORY"
