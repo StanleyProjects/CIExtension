@@ -9,8 +9,8 @@ echo "GitHub workflow pr merge start..."
  -sfs .vcs_email WORKER_VCS_EMAIL
 
 . ex/util/json -f "assemble/vcs/pr${PR_NUMBER}.json" \
- -sfs .base.ref GIT_BRANCH_DST \
- -sfs .head.sha GIT_COMMIT_SRC
+ -sfs .head.sha GIT_COMMIT_SRC \
+ -sfs .base.ref GIT_BRANCH_DST
 
 REPOSITORY='repository'
 . ex/util/assert -d "$REPOSITORY"
