@@ -1,8 +1,8 @@
 #!/bin/bash
 
 [ ! -z "$VERSION" ] && . ex/util/throw 101 "Illegal state!"
-. ex/util/assert -s .github/env
-. .github/env
+. ex/util/assert -s internal/env
+. internal/env
 . ex/util/require VERSION
 
 ISSUER='README.md'
