@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PREFIX='ex'
-SCRIPTS=($(find "$PREFIX" -type f))
+SCRIPTS=($(find "$PREFIX" -type f | sort -V))
 SIZE=${#SCRIPTS[@]}
 for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
  SCRIPT="${SCRIPTS[$SCRIPT_INDEX]}"
