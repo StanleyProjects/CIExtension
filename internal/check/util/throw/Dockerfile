@@ -1,6 +1,6 @@
 from kepocnhh/debian-amd64:3
 
-workdir /check/util/throw
+copy ex/util ex/util
+copy internal/check/util/throw/check.sh .
 
-copy ex/util/throw ex/util/throw
-copy internal/check/util/throw/check check
+cmd ./check.sh
