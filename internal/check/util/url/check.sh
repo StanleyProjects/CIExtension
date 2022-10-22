@@ -74,6 +74,11 @@ done
 $SCRIPT -h '' -a 'bar'; . ex/util/assert -eqv $? 161
 $SCRIPT -h 'foo' -h ''; . ex/util/assert -eqv $? 162
 
+$SCRIPT -d 'foo' -d 'bar'; . ex/util/assert -eqv $? 172
+$SCRIPT -d 'foo' -h 'bar' -d 'baz'; . ex/util/assert -eqv $? 173
+$SCRIPT -d '' -a 'bar'; . ex/util/assert -eqv $? 181
+$SCRIPT -h 'foo' -d ''; . ex/util/assert -eqv $? 182
+
 $SCRIPT -u 'foo' -o 'bar'; . ex/util/assert -eqv $? 201
 
 URL_TARGET="https://postman-echo.com/get"
@@ -98,8 +103,8 @@ $SCRIPT -u "$URL_TARGET" -o "$OUTPUT" -e 200; . ex/util/assert -eqv $? 0
 . ex/util/assert -eqv 0 "$(jq -Mc '.args|length' "$OUTPUT")"
 . ex/util/assert -eqv "$URL_TARGET" "$(jq -Mcer ".url|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
 
-URL_TARGET="https://postman-echo.com/get"
-
+echo "
+args..."
 URL_ARGS=(
  'foo' "$(date +%s)"
  'bar' "$(date +"%Y%m%d%H")"
@@ -119,6 +124,20 @@ done
 rm "$OUTPUT"
 [ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
 
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -e 200"; \
+ . ex/util/assert -eqv $? 0
+
+. ex/util/assert -s "$OUTPUT"
+. ex/util/assert -eqv "$URL_TARGET" "$(jq -Mcer ".url|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+for ((URL_ARG_INDEX=0; URL_ARG_INDEX<$((${#URL_ARGS[@]} / 2)); URL_ARG_INDEX++)); do
+ URL_ARG_KEY="${URL_ARGS[$((URL_ARG_INDEX * 2 + 0))]}"
+ echo "check arg [$((URL_ARG_INDEX + 1))/$((${#URL_ARGS[@]} / 2))] \"$URL_ARG_KEY\"..."
+ URL_ARG_VALUE="${URL_ARGS[$((URL_ARG_INDEX * 2 + 1))]}"
+ . ex/util/assert -eqv "$URL_ARG_VALUE" "$(jq -Mcer ".args.$URL_ARG_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+done
+
+echo "
+headers..."
 CHECK_HEADERS=(
  'h1' "$(date +%s)"
  'h2' "$(date +"%Y%m%d%H")"
@@ -133,19 +152,33 @@ for ((URL_HEADER_INDEX=0; URL_HEADER_INDEX<$((${#CHECK_HEADERS[@]} / 2)); URL_HE
  URL_POSTFIX="$URL_POSTFIX -h \"${URL_HEADER_KEY}: $URL_HEADER_VALUE\""
 done
 
-/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" $URL_POSTFIX"; . ex/util/assert -eqv $? 0
+URL_TARGET="https://postman-echo.com/headers"
+
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" $URL_POSTFIX -e 200"; \
+ . ex/util/assert -eqv $? 0
 
 . ex/util/assert -s "$OUTPUT"
-. ex/util/assert -eqv "$URL_TARGET" "$(jq -Mcer ".url|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
-for ((URL_ARG_INDEX=0; URL_ARG_INDEX<$((${#URL_ARGS[@]} / 2)); URL_ARG_INDEX++)); do
- URL_ARG_KEY="${URL_ARGS[$((URL_ARG_INDEX * 2 + 0))]}"
- echo "check arg [$((URL_ARG_INDEX + 1))/$((${#URL_ARGS[@]} / 2))] \"$URL_ARG_KEY\"..."
- URL_ARG_VALUE="${URL_ARGS[$((URL_ARG_INDEX * 2 + 1))]}"
- . ex/util/assert -eqv "$URL_ARG_VALUE" "$(jq -Mcer ".args.$URL_ARG_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
-done
 for ((URL_HEADER_INDEX=0; URL_HEADER_INDEX<$((${#CHECK_HEADERS[@]} / 2)); URL_HEADER_INDEX++)); do
  URL_HEADER_KEY="${CHECK_HEADERS[$((URL_HEADER_INDEX * 2 + 0))]}"
  echo "check header [$((URL_HEADER_INDEX + 1))/$((${#CHECK_HEADERS[@]} / 2))] \"$URL_HEADER_KEY\"..."
  URL_HEADER_VALUE="${CHECK_HEADERS[$((URL_HEADER_INDEX * 2 + 1))]}"
  . ex/util/assert -eqv "$URL_HEADER_VALUE" "$(jq -Mcer ".headers.$URL_HEADER_KEY|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
 done
+
+echo "
+data..."
+URL_TARGET="https://postman-echo.com/post"
+URL_DATA_EXPECTED="data $(date +%s)"
+URL_POSTFIX='-h "Content-Type: text/plain"'
+
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -e 200"; \
+ . ex/util/assert -eqv $? 0
+
+. ex/util/assert -s "$OUTPUT"
+. ex/util/assert -eqv "$URL_DATA_EXPECTED" "$(jq -Mcer ".data|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+
+exit 0
