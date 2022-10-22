@@ -11,7 +11,8 @@ URL_OUTPUT=''
 URL_CODE_EXPECTED_DEFAULT=200
 URL_TIMEOUT_CONNECT_DEFAULT=4
 URL_TIMEOUT_MAX_DEFAULT=16
-URL_HEADERS=''
+URL_DATA=''
+URL_POSTFIX=''
 
 for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
  URL_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
@@ -68,7 +69,15 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    URL_HEADER="${!URL_VALUE_INDEX}"
    if test -z "$URL_HEADER"; then
     echo "Url header is empty!"; exit $((160 + RELATIVE_INDEX + 1)); fi
-   URL_HEADERS="$URL_HEADERS -H \"$URL_HEADER\""
+   URL_POSTFIX="$URL_POSTFIX -H \"$URL_HEADER\""
+  ;;
+  -d)
+   if [ ! -z "$URL_DATA" ]; then
+    echo "Url data is already set!"; exit $((170 + RELATIVE_INDEX + 1)); fi
+   URL_DATA="${!URL_VALUE_INDEX}"
+   if test -z "$URL_DATA"; then
+    echo "Url data is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi
+   URL_POSTFIX="$URL_POSTFIX -d \"$URL_DATA\""
   ;;
   *) echo "Url option \"$URL_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
  esac
@@ -94,7 +103,7 @@ HTTP_CODE=0
 HTTP_CODE=$(/bin/bash -c "curl -s -w %{http_code} \
   --connect-timeout $URL_TIMEOUT_CONNECT \
   -m $URL_TIMEOUT_MAX \
-  -o \"$URL_OUTPUT\" \"$URL_BASE\" $URL_HEADERS")
+  -o \"$URL_OUTPUT\" \"$URL_BASE\" $URL_POSTFIX")
 if test $? -ne 0; then
  echo "Request \"$URL_BASE\" error!"
  exit 201
