@@ -79,7 +79,7 @@ $SCRIPT -d 'foo' -h 'bar' -d 'baz'; . ex/util/assert -eqv $? 173
 $SCRIPT -d '' -a 'bar'; . ex/util/assert -eqv $? 181
 $SCRIPT -h 'foo' -d ''; . ex/util/assert -eqv $? 182
 
-$SCRIPT -u 'foo' -o 'bar'; . ex/util/assert -eqv $? 201
+$SCRIPT -u 'foo' -o 'bar'; . ex/util/assert -eqv $? 251
 
 URL_TARGET="https://postman-echo.com/get"
 rm "$OUTPUT"
@@ -87,7 +87,7 @@ rm "$OUTPUT"
 
 CODE_EXPECTED=201
 [ $CODE_EXPECTED -eq 200 ] && . ex/util/throw 101 "Illegal state!"
-$SCRIPT -u "$URL_TARGET" -o "$OUTPUT" -e $CODE_EXPECTED; . ex/util/assert -eqv $? 202
+$SCRIPT -u "$URL_TARGET" -o "$OUTPUT" -e $CODE_EXPECTED; . ex/util/assert -eqv $? 252
 
 echo "
 Check success..."
@@ -175,7 +175,15 @@ URL_POSTFIX='-h "Content-Type: text/plain"'
 
 rm "$OUTPUT"
 [ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
-/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -e 200"; \
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -e 404"; \
+ . ex/util/assert -eqv $? 0
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -x GET -e 404"; \
+ . ex/util/assert -eqv $? 0
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -x POST -e 200"; \
  . ex/util/assert -eqv $? 0
 
 . ex/util/assert -s "$OUTPUT"
