@@ -13,8 +13,8 @@ URL_TIMEOUT_CONNECT_DEFAULT=4
 URL_TIMEOUT_MAX_DEFAULT=16
 URL_DATA=''
 URL_POSTFIX=''
-
-echo "Not implemented!"; exit 1 # todo method (GET, POST...)
+URL_METHOD=''
+URL_METHOD_DEFAULT='GET'
 
 for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
  URL_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
@@ -81,6 +81,13 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
     echo "Url data is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi
    URL_POSTFIX="$URL_POSTFIX -d \"$URL_DATA\""
   ;;
+  -x)
+   if [ ! -z "$URL_METHOD" ]; then
+    echo "Url method is already set!"; exit $((190 + RELATIVE_INDEX + 1)); fi
+   URL_METHOD="${!URL_VALUE_INDEX}"
+   if test -z "$URL_METHOD"; then
+    echo "Url method is empty!"; exit $((200 + RELATIVE_INDEX + 1)); fi
+  ;;
   *) echo "Url option \"$URL_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
  esac
 done
@@ -101,15 +108,26 @@ if test -z "$URL_TIMEOUT_MAX"; then
  URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
 fi
 
+if test -z "$URL_METHOD"; then
+ URL_METHOD="$URL_URL_METHOD_DEFAULT"
+else
+ case "$URL_METHOD" in
+  GET | POST) /bin/true;;
+  *) echo "Url method \"$URL_METHOD\" is not supported!"; exit 13;;
+ esac
+fi
+
 HTTP_CODE=0
-HTTP_CODE=$(/bin/bash -c "curl -s -w %{http_code} \
-  --connect-timeout $URL_TIMEOUT_CONNECT \
-  -m $URL_TIMEOUT_MAX \
-  -o \"$URL_OUTPUT\" \"$URL_BASE\" $URL_POSTFIX")
+HTTP_CODE=$(/bin/bash -c "curl --silent \
+ --write-out %{http_code} \
+ --connect-timeout $URL_TIMEOUT_CONNECT \
+ --max-time $URL_TIMEOUT_MAX \
+ --output '$URL_OUTPUT' \
+ --request $URL_METHOD '$URL_BASE' $URL_POSTFIX")
 if test $? -ne 0; then
  echo "Request \"$URL_BASE\" error!"
- exit 201
+ exit 251
 elif test $HTTP_CODE -ne $URL_CODE_EXPECTED; then
  echo "Actual response code is \"$HTTP_CODE\", but expected is \"$URL_CODE_EXPECTED\"!"
- exit 202
+ exit 252
 fi
