@@ -8,18 +8,38 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - run: |
-          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> $GITHUB_ENV
-          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> $GITHUB_ENV
-          echo "GIT_BRANCH_SRC=$(jq -r .pull_request.head.sha $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          mkdir -p repository
-      - working-directory: repository
+          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> "$GITHUB_ENV"
+          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> "$GITHUB_ENV"
+          mkdir -p workdir/prepare/repository
+      - working-directory: workdir/prepare/repository
+        env:
+          GIT_BRANCH_SRC: ${{github.event.pull_request.head.sha}}
         run: |
           git init
-          git remote add origin https://${VCS_PAT}github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git
-          git fetch origin $GIT_BRANCH_SRC
-          git checkout $GIT_BRANCH_SRC
-      - run: |
-          echo "Not implemented!"; exit 1
+          VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
+          git remote add origin "https://${VCS_PAT}github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
+          git fetch origin "$GIT_BRANCH_SRC"
+          git checkout "$GIT_BRANCH_SRC"
+      - working-directory: workdir/prepare
+        env:
+          VCS_DOMAIN: 'https://api.github.com'
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          mkdir ex; cp -r repository/ex/util ex/util
+          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
+          repository/ex/github/assemble/worker.sh
+          repository/ex/github/assemble/repository.sh
+          repository/ex/github/assemble/pr.sh
+          repository/ex/github/workflow/pr/merge.sh
+          cat repository/internal/env >> $GITHUB_ENV
+      - working-directory: workdir/prepare/repository
+        run: |
+          ex/util/require VERSION; ex/github/tag/test.sh "${VERSION}-UNSTABLE"
+          internal/check/readme.sh
+          internal/unit/test/coverage.sh
+          internal/unit/test.sh
+      - working-directory: workdir/prepare/repository
+        run: echo "Not implemented!"; exit 1 # todo
