@@ -34,7 +34,6 @@ jobs:
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
-          cat repository/internal/env >> $GITHUB_ENV
       - working-directory: workdir
         run: |
           mv prepare/repository repository
@@ -45,6 +44,7 @@ jobs:
           VCS_DOMAIN: 'https://api.github.com'
         run: |
           ex/github/assemble/repository.sh
+          . repository/internal/env
           ex/util/require VERSION
           ex/github/tag/test.sh "${VERSION}-UNSTABLE"
       - working-directory: workdir/repository
