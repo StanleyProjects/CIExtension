@@ -79,7 +79,7 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    URL_DATA="${!URL_VALUE_INDEX}"
    if test -z "$URL_DATA"; then
     echo "Url data is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi
-   URL_POSTFIX="$URL_POSTFIX -d \"$URL_DATA\""
+   URL_POSTFIX="$URL_POSTFIX --data-raw '$URL_DATA'"
   ;;
   -x)
    if [ ! -z "$URL_METHOD" ]; then

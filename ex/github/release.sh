@@ -7,7 +7,7 @@ if test $# -ne 1; then
 
 BODY="$1"
 
-. ex/util/require BODY
+. ex/util/require BODY VCS_PAT
 
 . ex/util/json -j "$BODY" \
  -sfs .name RELEASE_NAME
@@ -15,7 +15,7 @@ BODY="$1"
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .url REPOSITORY_URL
 
-echo "Not implemented!"; exit 1 # todo
+. ex/util/mkdirs assemble/github
 
 ex/util/url -u "$REPOSITORY_URL/releases" \
  -o assemble/github/release.json \
