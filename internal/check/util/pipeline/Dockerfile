@@ -1,7 +1,6 @@
 from kepocnhh/debian-amd64:3
 
-workdir /check/util/pipeline
+copy ex/util ex/util
+copy internal/check/util/pipeline/check.sh .
 
-copy ex/util/pipeline ex/util/pipeline
-copy internal/check/util/pipeline/test.sh .
-copy internal/check/util/pipeline/check check
+cmd ./check.sh

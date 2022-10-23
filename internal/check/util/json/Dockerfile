@@ -1,7 +1,6 @@
 from kepocnhh/debian-amd64:3
 
-workdir /check/util/json
+copy ex/util ex/util
+copy internal/check/util/json/check.sh .
 
-copy ex/util/json ex/util/json
-copy internal/check/util/json/sample.json .
-copy internal/check/util/json/check check
+cmd ./check.sh

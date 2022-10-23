@@ -1,0 +1,25 @@
+name: Pull request to unstable
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - unstable
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: |
+          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> $GITHUB_ENV
+          echo "GIT_BRANCH_SRC=$(jq -r .pull_request.head.sha $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          mkdir -p repository
+      - working-directory: repository
+        run: |
+          git init
+          git remote add origin https://${VCS_PAT}github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git
+          git fetch origin $GIT_BRANCH_SRC
+          git checkout $GIT_BRANCH_SRC
+      - run: |
+          echo "Not implemented!"; exit 1
