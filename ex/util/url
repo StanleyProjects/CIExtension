@@ -14,6 +14,8 @@ URL_TIMEOUT_MAX_DEFAULT=16
 URL_DATA=''
 URL_POSTFIX=''
 
+echo "Not implemented!"; exit 1 # todo method (GET, POST...)
+
 for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
  URL_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
  URL_VALUE_INDEX=$((RELATIVE_INDEX * 2 + 2))

@@ -9,16 +9,17 @@ BODY="$1"
 
 . ex/util/require BODY
 
-echo "Not implemented!"; exit 1
-
 . ex/util/json -j "$BODY" \
  -sfs .name RELEASE_NAME
 
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .url REPOSITORY_URL
 
+echo "Not implemented!"; exit 1 # todo
+
 ex/util/url -u "$REPOSITORY_URL/releases" \
  -o assemble/github/release.json \
+ -x POST \
  -h "Authorization: token $VCS_PAT" \
  -d "$BODY" \
  -e 201 \
