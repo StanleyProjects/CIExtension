@@ -3,7 +3,7 @@
 REPOSITORY='repository'
 . ex/util/assert -d "$REPOSITORY"
 
-. ex/pipeline \
+. ex/util/pipeline \
  "$REPOSITORY"/ex/github/assemble/worker.sh \
  "$REPOSITORY"/ex/github/assemble/repository.sh \
  "$REPOSITORY"/ex/github/assemble/pr.sh \
