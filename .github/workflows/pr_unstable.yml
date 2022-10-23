@@ -20,7 +20,7 @@ jobs:
         run: |
           git init
           VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
-          git remote add origin "https://${VCS_PAT}github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
+          git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
           git fetch origin "$GIT_BRANCH_SRC"
           git checkout "$GIT_BRANCH_SRC"
       - working-directory: workdir/prepare
