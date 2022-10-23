@@ -35,9 +35,15 @@ jobs:
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
           cat repository/internal/env >> $GITHUB_ENV
-      - working-directory: workdir/prepare/repository
+      - working-directory: workdir
         run: |
+          mv prepare/repository repository
+          rm -rf prepare
+          cp -r repository/ex ex
+          ex/github/assemble/repository.sh
           ex/util/require VERSION; ex/github/tag/test.sh "${VERSION}-UNSTABLE"
+      - working-directory: workdir/repository
+        run: |
           internal/check/readme.sh
           internal/unit/test/coverage.sh
           internal/unit/test.sh
