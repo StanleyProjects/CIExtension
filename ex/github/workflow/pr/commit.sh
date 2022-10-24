@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "GitHub pull request commit..."
+echo "GitHub workflow pr commit..."
 
 . ex/util/require PR_NUMBER
 
@@ -11,7 +11,7 @@ echo "GitHub pull request commit..."
 . ex/util/json -f assemble/vcs/actions/run.json \
  -si .run_number CI_BUILD_NUMBER
 
-REPOSITORY=repository
+REPOSITORY='repository'
 . ex/util/assert -d "$REPOSITORY"
 
 MESSAGE="Merge ${GIT_COMMIT_SRC::7} -> ${GIT_COMMIT_DST::7} by CI build #${CI_BUILD_NUMBER}."

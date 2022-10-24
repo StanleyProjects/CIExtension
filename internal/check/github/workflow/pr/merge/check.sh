@@ -10,32 +10,32 @@ $SCRIPT; . ex/util/assert -eqv $? 101
 
 export PR_NUMBER='foo'
 
-[ -f assemble/vcs/worker.json ] && . ex/util/throw 101 "Illegal state!"
-$SCRIPT; . ex/util/assert -eqv $? 122
-
-. ex/util/mkdirs assemble/vcs
-echo '{}' > assemble/vcs/worker.json
-$SCRIPT; . ex/util/assert -eqv $? 42
-
-. ex/util/json_merge -f assemble/vcs/worker.json \
- '.name="foo"' \
- '.vcs_email="bar"'
 ARTIFACT="assemble/vcs/pr${PR_NUMBER}.json"
 [ -f "$ARTIFACT" ] && . ex/util/throw 101 "Illegal state!"
 $SCRIPT; . ex/util/assert -eqv $? 122
 
+. ex/util/mkdirs assemble/vcs
 echo '{}' > "$ARTIFACT"
 $SCRIPT; . ex/util/assert -eqv $? 42
 
 . ex/util/json_merge -f "$ARTIFACT" \
  '.head.sha="bar"' \
  '.base.ref="foo"'
+[ -f assemble/vcs/worker.json ] && . ex/util/throw 101 "Illegal state!"
+$SCRIPT; . ex/util/assert -eqv $? 122
+
+echo '{}' > assemble/vcs/worker.json
+$SCRIPT; . ex/util/assert -eqv $? 42
+
+. ex/util/json_merge -f assemble/vcs/worker.json \
+ '.name="foo"' \
+ '.vcs_email="bar"'
 REPOSITORY='repository'
 [ -d "$REPOSITORY" ] && . ex/util/throw 101 "Illegal state!"
 $SCRIPT; . ex/util/assert -eqv $? 152
 
 . ex/util/mkdirs "$REPOSITORY"
-$SCRIPT; . ex/util/assert -eqv $? 41
+$SCRIPT; . ex/util/assert -eqv $? 21
 
 GIT_COMMIT_SRC='538b3f463ca5395c125b1616f4b30452f31cc0dc'
 
@@ -63,7 +63,7 @@ git -C "$REPOSITORY" fetch origin "$GIT_BRANCH_DST" \
 . ex/util/json_merge -f "$ARTIFACT" \
  ".head.sha=\"$GIT_COMMIT_SRC\"" \
  ".base.ref=\"$GIT_BRANCH_DST\""
-$SCRIPT; . ex/util/assert -eqv $? 42
+$SCRIPT; . ex/util/assert -eqv $? 22
 
 echo "
 Check success..."
