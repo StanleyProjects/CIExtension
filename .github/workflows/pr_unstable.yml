@@ -44,10 +44,9 @@ jobs:
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           ex/github/tag/test.sh "${VERSION}-UNSTABLE"
-      - working-directory: workdir/repository
-        run: |
-          internal/check/readme.sh
-          internal/unit/test/coverage.sh
-          internal/unit/test.sh
+      # todo push
+      # todo release
+      # todo check_state
+      # todo on_success
       - working-directory: workdir/prepare/repository
         run: echo "Not implemented!"; exit 1 # todo
