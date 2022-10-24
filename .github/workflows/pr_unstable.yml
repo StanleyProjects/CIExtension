@@ -16,7 +16,7 @@ jobs:
           mkdir -p workdir/prepare/repository
       - working-directory: workdir/prepare/repository
         env:
-          GIT_BRANCH_SRC: ${{github.event.pull_request.head.sha}}
+          GIT_BRANCH_SRC: ${{github.event.pull_request.head.sha}} # todo ref
         run: |
           git init
           VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
