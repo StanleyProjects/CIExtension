@@ -55,7 +55,7 @@ jobs:
           export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
           ex/github/assemble/worker.sh
           ex/github/assemble/pr.sh
-          export CI_BUILD_ID=$GITHUB_RUN_NUMBER
+          export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
       - working-directory: workdir
         env:
