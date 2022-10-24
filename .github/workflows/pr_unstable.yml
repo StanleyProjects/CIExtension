@@ -16,7 +16,7 @@ jobs:
           mkdir -p workdir/prepare/repository
       - working-directory: workdir/prepare/repository
         env:
-          GIT_BRANCH_SRC: ${{github.event.pull_request.head.sha}} # todo ref
+          GIT_BRANCH_SRC: ${{github.event.pull_request.head.ref}}
         run: |
           git init
           VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
@@ -30,7 +30,10 @@ jobs:
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
           export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
-          repository/.github/workflows/pr/merge.sh
+          repository/ex/github/assemble/worker.sh
+          repository/ex/github/assemble/repository.sh
+          repository/ex/github/assemble/pr.sh
+          repository/ex/github/workflow/pr/merge.sh
       - working-directory: workdir
         run: |
           mv prepare/repository repository
@@ -44,9 +47,28 @@ jobs:
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           ex/github/tag/test.sh "${VERSION}-UNSTABLE"
-      # todo push
-      # todo release
-      # todo check_state
-      # todo on_success
+      - working-directory: workdir
+        env:
+          VCS_DOMAIN: 'https://api.github.com'
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
+          ex/github/assemble/worker.sh
+          ex/github/assemble/pr.sh
+          export CI_BUILD_ID=$GITHUB_RUN_NUMBER
+          ex/github/assemble/actions/run.sh
+      - working-directory: workdir
+        env:
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          ex/github/workflow/pr/commit.sh
+# todo assemble artifact
+# todo push
+# todo assemble commit
+          echo "Not implemented!"; exit 1 # todo
+# todo push
+# todo release
+# todo check_state
+# todo on_success
       - working-directory: workdir/prepare/repository
         run: echo "Not implemented!"; exit 1 # todo
