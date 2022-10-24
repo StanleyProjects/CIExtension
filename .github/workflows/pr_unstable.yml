@@ -62,13 +62,11 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           ex/github/workflow/pr/commit.sh
-# todo assemble artifact
-# todo push
-# todo assemble commit
-          echo "Not implemented!"; exit 1 # todo
-# todo push
-# todo release
-# todo check_state
-# todo on_success
-      - working-directory: workdir/prepare/repository
-        run: echo "Not implemented!"; exit 1 # todo
+          echo "Not implemented! assemble artifact"; exit 1 # todo
+          echo "Not implemented! push"; exit 1 # todo
+          echo "Not implemented! assemble commit"; exit 1 # todo
+      - working-directory: workdir
+        run: |
+          echo "Not implemented! release"; exit 1 # todo
+          echo "Not implemented! check_state"; exit 1 # todo
+          echo "Not implemented! on_success"; exit 1 # todo
