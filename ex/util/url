@@ -88,6 +88,14 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    if test -z "$URL_METHOD"; then
     echo "Url method is empty!"; exit $((200 + RELATIVE_INDEX + 1)); fi
   ;;
+  -b)
+   if [ ! -z "$URL_DATA_BINARY" ]; then
+    echo "Url data binary is already set!"; exit $((210 + RELATIVE_INDEX + 1)); fi
+   URL_DATA_BINARY="${!URL_VALUE_INDEX}"
+   if test -z "$URL_DATA_BINARY"; then
+    echo "Url data binary is empty!"; exit $((220 + RELATIVE_INDEX + 1)); fi
+   URL_POSTFIX="$URL_POSTFIX --data-binary '$URL_DATA_BINARY'"
+  ;;
   *) echo "Url option \"$URL_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
  esac
 done
