@@ -75,17 +75,18 @@ jobs:
           BODY="{}"
           TAG="${VERSION}-UNSTABLE"
           . ex/util/json -f assemble/vcs/commit.json -sfs .sha GIT_COMMIT_SHA
-          . ex/util/jq/merge BODY ".name=\"$TAG\"" ".tag_name=\"$TAG\"" ".target_commitish=\"$GIT_COMMIT_SHA\""
+          . ex/util/json_merge -v BODY ".name=\"$TAG\"" ".tag_name=\"$TAG\"" ".target_commitish=\"$GIT_COMMIT_SHA\""
           . ex/util/json -f assemble/vcs/actions/run.json -si .run_number CI_BUILD_NUMBER -sfs .html_url CI_BUILD_HTML_URL
-          . ex/util/jq/merge BODY ".body=\"CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL)\""
-          . ex/util/jq/merge BODY '.draft=false' '.prerelease=true'
+          . ex/util/json_merge -v BODY ".body=\"CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL)\""
+          . ex/util/json_merge -v BODY '.draft=false' '.prerelease=true'
           mkdir assemble/github
+          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
           ex/github/release.sh "$BODY"
           ASSET_NAME="CIExtension-${VERSION}-UNSTABLE.zip"
           ASSETS="[]"
           ASSET="{}"
-          . ex/util/jq/merge ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
-          . ex/util/jq/merge ASSETS ".+=[$ASSET]"
+          . ex/util/json_merge -v ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
+          . ex/util/json_merge -v ASSETS ".+=[$ASSET]"
           ex/github/release/upload/asset.sh "$ASSETS"
       - working-directory: workdir
         run: |
