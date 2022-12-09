@@ -1,0 +1,133 @@
+#!/bin/bash
+
+if test $# -lt 4; then
+ echo "Script needs more arguments, but actual is $#!"; exit 11
+elif test $(($# % 2)) -ne 0; then
+ echo "Arguments error!"; exit 12
+fi
+
+URL_BASE=''
+URL_OUTPUT=''
+URL_CODE_EXPECTED_DEFAULT=200
+URL_TIMEOUT_CONNECT_DEFAULT=4
+URL_TIMEOUT_MAX_DEFAULT=16
+URL_DATA=''
+URL_POSTFIX=''
+URL_METHOD=''
+URL_METHOD_DEFAULT='GET'
+
+for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
+ URL_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
+ URL_VALUE_INDEX=$((RELATIVE_INDEX * 2 + 2))
+ URL_OPTION="${!URL_OPTION_INDEX}"
+ if test -z "$URL_OPTION"; then
+  echo "Url option is empty!"; exit $((30 + RELATIVE_INDEX + 1)); fi
+ case "$URL_OPTION" in
+  -u)
+   if [ ! -z "$URL_BASE" ]; then
+    echo "Url is already set!"; exit $((50 + RELATIVE_INDEX + 1)); fi
+   URL_BASE="${!URL_VALUE_INDEX}"
+   if test -z "$URL_BASE"; then
+    echo "Url is empty!"; exit $((60 + RELATIVE_INDEX + 1)); fi
+  ;;
+  -o)
+   if [ ! -z "$URL_OUTPUT" ]; then
+    echo "Url output is already set!"; exit $((70 + RELATIVE_INDEX + 1)); fi
+   URL_OUTPUT="${!URL_VALUE_INDEX}"
+   if test -z "$URL_OUTPUT"; then
+    echo "Url output is empty!"; exit $((80 + RELATIVE_INDEX + 1))
+   elif test -f "$URL_OUTPUT"; then
+    echo "Url output \"$URL_OUTPUT\" exists!"; exit $((90 + RELATIVE_INDEX + 1))
+   fi
+  ;;
+  -e)
+   if [ ! -z "$URL_CODE_EXPECTED" ]; then
+    echo "Url code expected already set!"; exit $((100 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    URL_CODE_EXPECTED="${!URL_VALUE_INDEX}"
+   else
+    echo "Url code expected format error!"; exit $((110 + RELATIVE_INDEX + 1))
+   fi
+  ;;
+  -c)
+   if [ ! -z "$URL_TIMEOUT_CONNECT" ]; then
+    echo "Url timeout connect already set!"; exit $((120 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    URL_TIMEOUT_CONNECT="${!URL_VALUE_INDEX}"
+   else
+    echo "Url timeout connect format error!"; exit $((130 + RELATIVE_INDEX + 1))
+   fi
+  ;;
+  -m)
+   if [ ! -z "$URL_TIMEOUT_MAX" ]; then
+    echo "Url timeout max already set!"; exit $((140 + RELATIVE_INDEX + 1))
+   elif [[ "${!URL_VALUE_INDEX}" =~ ^[1-9][0-9]*$ ]]; then
+    URL_TIMEOUT_MAX="${!URL_VALUE_INDEX}"
+   else
+    echo "Url timeout max format error!"; exit $((150 + RELATIVE_INDEX + 1))
+   fi
+  ;;
+  -h)
+   URL_HEADER="${!URL_VALUE_INDEX}"
+   if test -z "$URL_HEADER"; then
+    echo "Url header is empty!"; exit $((160 + RELATIVE_INDEX + 1)); fi
+   URL_POSTFIX="$URL_POSTFIX -H \"$URL_HEADER\""
+  ;;
+  -d)
+   if [ ! -z "$URL_DATA" ]; then
+    echo "Url data is already set!"; exit $((170 + RELATIVE_INDEX + 1)); fi
+   URL_DATA="${!URL_VALUE_INDEX}"
+   if test -z "$URL_DATA"; then
+    echo "Url data is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi
+   URL_POSTFIX="$URL_POSTFIX --data-raw '$URL_DATA'"
+  ;;
+  -x)
+   if [ ! -z "$URL_METHOD" ]; then
+    echo "Url method is already set!"; exit $((190 + RELATIVE_INDEX + 1)); fi
+   URL_METHOD="${!URL_VALUE_INDEX}"
+   if test -z "$URL_METHOD"; then
+    echo "Url method is empty!"; exit $((200 + RELATIVE_INDEX + 1)); fi
+  ;;
+  *) echo "Url option \"$URL_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
+ esac
+done
+
+if test -z "$URL_BASE"; then
+ echo "Url is empty!"; exit 21
+elif test -z "$URL_OUTPUT"; then
+ echo "Url output is empty!"; exit 22
+fi
+
+if test -z "$URL_CODE_EXPECTED"; then
+ URL_CODE_EXPECTED=$URL_CODE_EXPECTED_DEFAULT
+fi
+if test -z "$URL_TIMEOUT_CONNECT"; then
+ URL_TIMEOUT_CONNECT=$URL_TIMEOUT_CONNECT_DEFAULT
+fi
+if test -z "$URL_TIMEOUT_MAX"; then
+ URL_TIMEOUT_MAX=$URL_TIMEOUT_MAX_DEFAULT
+fi
+
+if test -z "$URL_METHOD"; then
+ URL_METHOD="$URL_METHOD_DEFAULT"
+else
+ case "$URL_METHOD" in
+  GET | POST) /bin/true;;
+  *) echo "Url method \"$URL_METHOD\" is not supported!"; exit 13;;
+ esac
+fi
+
+HTTP_CODE=0
+HTTP_CODE=$(/bin/bash -c "curl --silent \
+ --write-out %{http_code} \
+ --connect-timeout $URL_TIMEOUT_CONNECT \
+ --max-time $URL_TIMEOUT_MAX \
+ --output '$URL_OUTPUT' \
+ --request $URL_METHOD '$URL_BASE' $URL_POSTFIX")
+if test $? -ne 0; then
+ echo "Request \"$URL_BASE\" error!"
+ exit 251
+elif test $HTTP_CODE -ne $URL_CODE_EXPECTED; then
+ echo "Actual response code is \"$HTTP_CODE\", but expected is \"$URL_CODE_EXPECTED\"!"
+ exit 252
+fi

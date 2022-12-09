@@ -1,0 +1,60 @@
+name: Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_source:
+        description: "VCS source name. For example [wip, dev...]."
+        required: true
+        default: "wip"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: |
+          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> $GITHUB_ENV
+          mkdir -p repository
+      - working-directory: repository
+        run: |
+          git init
+          git remote add origin https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
+          git fetch --depth=1 origin "${{github.event.inputs.git_source}}"
+          git checkout FETCH_HEAD
+      - working-directory: repository
+        env:
+          VCS_TOKENS: ${{secrets.VCS_TOKENS}}
+          TELEGRAM: ${{secrets.TELEGRAM}}
+        run: |
+          for it in \
+           internal/check/github/assemble/repository/pages \
+           internal/check/github/assemble/worker \
+           internal/check/github/diagnostics/report \
+           internal/check/github/release; do \
+           echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> "$it/env" || exit 1; done
+          for it in \
+           internal/check/notification/telegram/send_message \
+           internal/check/notification/telegram/send_file; do \
+           echo "CHECK_TELEGRAM_BOT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)" >> "$it/env" && \
+           echo "CHECK_TELEGRAM_BOT_TOKEN=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)" >> "$it/env" && \
+           echo "CHECK_TELEGRAM_CHAT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)" >> "$it/env" || exit 1; done
+      - working-directory: repository
+        run: |
+          internal/unit/test/coverage.sh
+          internal/unit/test.sh
+      - working-directory: repository
+        env:
+          VCS_DOMAIN: 'https://api.github.com'
+        run: |
+          export CI_BUILD_ID="$GITHUB_RUN_ID"; \
+          ex/github/assemble/actions/run.sh
+      - working-directory: repository
+        env:
+          TELEGRAM: ${{secrets.TELEGRAM}}
+        run: |
+          export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
+          export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
+          export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
+          ex/notification/telegram/send_message.sh \
+           "CI build [#$(jq .run_number assemble/vcs/actions/run.json)]($(jq -r .html_url assemble/vcs/actions/run.json)) success."

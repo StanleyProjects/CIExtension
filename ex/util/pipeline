@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if test $# -eq 0; then
+ echo "Empty arguments!"; exit 11
+fi
+
+PIPELINE_ID=$(date +%s)
+PIPELINE_CODE=0
+for ((PIPELINE_INDEX=1; PIPELINE_INDEX<=$#; PIPELINE_INDEX++)); do
+ PIPELINE_COMMAND="${!PIPELINE_INDEX}"
+ if test -z "$PIPELINE_COMMAND"; then
+  echo "The command [$PIPELINE_INDEX/$#] is empty!"; exit $((20 + $PIPELINE_INDEX))
+ fi
+ echo -e "\n >-- start $PIPELINE_ID [$PIPELINE_INDEX/$#] command -->"
+ /bin/bash -c "$PIPELINE_COMMAND"; PIPELINE_CODE=$?
+ if test $PIPELINE_CODE -ne 0; then
+  echo -e " <-- command $PIPELINE_ID [$PIPELINE_INDEX/$#] error!\n"; exit $((30 + $PIPELINE_INDEX))
+ fi
+done
