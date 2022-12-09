@@ -9,4 +9,4 @@ ASSETS="$1"
 
 . ex/util/require ASSETS VCS_PAT
 
-exit 1 # todo json select filled array
+# todo util url data binary
