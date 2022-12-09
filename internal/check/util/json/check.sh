@@ -104,6 +104,8 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
+ QUERY_OPTION='-si'
+ echo "query option: \"${QUERY_OPTION}\"..."
  QUERIES=(
   '.val_boolean_true'
   '.val_boolean_false'
@@ -120,9 +122,11 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
    '-f') EXPECTED=42;;
    *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
   esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" -si "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
+ QUERY_OPTION='-sfs'
+ echo "query option: \"${QUERY_OPTION}\"..."
  QUERIES=(
   '.val_int'
   '.val_float'
@@ -140,9 +144,11 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
    '-f') EXPECTED=42;;
    *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
   esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" -sfs "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
+ QUERY_OPTION='-ss'
+ echo "query option: \"${QUERY_OPTION}\"..."
  QUERIES=(
   '.val_int'
   '.val_float'
@@ -159,9 +165,11 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
    '-f') EXPECTED=42;;
    *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
   esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" -ss "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
+ QUERY_OPTION='-sb'
+ echo "query option: \"${QUERY_OPTION}\"..."
  QUERIES=(
   '.val_int'
   '.val_float'
@@ -178,7 +186,50 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
    '-f') EXPECTED=42;;
    *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
   esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" -sb "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+ done
+
+ QUERY_OPTION='-sa'
+ echo "query option: \"${QUERY_OPTION}\"..."
+ QUERIES=(
+  '.val_int'
+  '.val_float'
+  '.val_boolean_true'
+  '.val_boolean_false'
+  '.val_string'
+  '.val_string_empty'
+  '.val_object'
+  '.val_null'
+ )
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+ done
+
+ QUERY_OPTION='-sfa'
+ echo "query option: \"${QUERY_OPTION}\"..."
+ QUERIES=(
+  '.val_int'
+  '.val_float'
+  '.val_boolean_true'
+  '.val_boolean_false'
+  '.val_string'
+  '.val_string_empty'
+  '.val_object'
+  '.val_array_empty'
+  '.val_null'
+ )
+ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
+  case "$SOURCE_OPTION" in
+   '-j') EXPECTED=41;;
+   '-f') EXPECTED=42;;
+   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
+  esac
+  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  echo "
@@ -191,7 +242,6 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} -si 2 ''; . ex/util/assert -eqv $? 103
  done
 
- EXPECTED=104
  QUERIES=('1' '2' '42' '-a' '/foo')
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
   $SCRIPT "$SOURCE_OPTION" "$SOURCE" -si .val_int "${QUERIES[$QUERY_INDEX]}"; . ex/util/assert -eqv $? 104
@@ -214,12 +264,16 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
  VAL_STRING="VAL_STRING$(date +%s)"
  VAL_BOOLEAN_TRUE="VAL_BOOLEAN_TRUE$(date +%s)"
  VAL_BOOLEAN_FALSE="VAL_BOOLEAN_FALSE$(date +%s)"
+ VAL_ARRAY_2="VAL_ARRAY_2$(date +%s)"
+ VAL_ARRAY_EMPTY="VAL_ARRAY_EMPTY$(date +%s)"
  . $SCRIPT "$SOURCE_OPTION" "${SOURCES[$((SOURCE_INDEX * 2 + 1))]}" \
   -si .val_int VAL_INT \
   -ss .val_string_empty VAL_STRING_EMPTY \
   -sfs .val_string VAL_STRING \
   -sb .val_boolean_true VAL_BOOLEAN_TRUE \
-  -sb .val_boolean_false VAL_BOOLEAN_FALSE
+  -sb .val_boolean_false VAL_BOOLEAN_FALSE \
+  -sfa .val_array_2 VAL_ARRAY_2 \
+  -sa .val_array_empty VAL_ARRAY_EMPTY
 
  CHECKING=(
   'val_int' '42' "$VAL_INT"
@@ -227,6 +281,8 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   'val_string' 'foo' "$VAL_STRING"
   'val_boolean_true' 'true' "$VAL_BOOLEAN_TRUE"
   'val_boolean_false' 'false' "$VAL_BOOLEAN_FALSE"
+  'val_array_2' '["bar","baz"]' "$VAL_ARRAY_2"
+  'val_array_empty' '[]' "$VAL_ARRAY_EMPTY"
  )
  for ((CHECKING_INDEX=0; CHECKING_INDEX<$((${#CHECKING[@]} / 3)); CHECKING_INDEX++)); do
   VALUE_NAME="${CHECKING[$((CHECKING_INDEX * 3 + 0))]}"
