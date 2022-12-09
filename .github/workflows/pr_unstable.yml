@@ -10,7 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - run: |
+      - name: Set up repository
+        run: |
           echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> "$GITHUB_ENV"
           echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> "$GITHUB_ENV"
           mkdir -p workdir/prepare/repository
@@ -39,7 +40,8 @@ jobs:
           mv prepare/repository repository
           rm -rf prepare
           cp -r repository/ex ex
-      - working-directory: workdir
+      - name: Check version
+        working-directory: workdir
         env:
           VCS_DOMAIN: 'https://api.github.com'
         run: |
@@ -47,7 +49,8 @@ jobs:
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           ex/github/tag/test.sh "${VERSION}-UNSTABLE"
-      - working-directory: workdir
+      - name: Set up pull request
+        working-directory: workdir
         env:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
@@ -57,7 +60,8 @@ jobs:
           ex/github/assemble/pr.sh
           export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
-      - working-directory: workdir
+      - name: VCS push
+        working-directory: workdir
         env:
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
@@ -68,7 +72,8 @@ jobs:
           $(ISSUER="$(pwd)" && cd "$ISSUER" && zip -r9 "assemble/project/artifact/CIExtension-${VERSION}-UNSTABLE.zip" ci ex > /dev/null)
           git -C repository push
           ex/github/assemble/commit.sh
-      - working-directory: workdir
+      - name: GitHub release
+        working-directory: workdir
         run: |
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION

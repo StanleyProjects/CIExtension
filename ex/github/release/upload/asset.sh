@@ -24,11 +24,13 @@ for ((ASSET_INDEX = 0; ASSET_INDEX<SIZE; ASSET_INDEX++)); do
   -sfs .label ASSET_LABEL \
   -sfs .path ASSET_PATH
  echo "Upload asset [$((ASSET_INDEX + 1))/$SIZE] \"$ASSET_NAME\"..."
+ OUTPUT="/tmp/$(date +%s)"
  ex/util/url -u "${RELEASE_UPLOAD_URL}?name=${ASSET_NAME}&label=$ASSET_LABEL" \
+  -o "$OUTPUT" \
   -h "Authorization: token $VCS_PAT" \
   -h 'Content-Type: text/plain' \
   -x POST \
   -b "$ASSET_PATH" \
   -e 201 \
-  || . ex/util/throw 21 "GitHub release upload asset \"$ASSET_NAME\" error!"
+  || . ex/util/throw 21 "GitHub release upload asset \"$ASSET_NAME\" error: $OUTPUT"
 done
