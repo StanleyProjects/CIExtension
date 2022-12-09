@@ -79,6 +79,11 @@ $SCRIPT -d 'foo' -h 'bar' -d 'baz'; . ex/util/assert -eqv $? 173
 $SCRIPT -d '' -a 'bar'; . ex/util/assert -eqv $? 181
 $SCRIPT -h 'foo' -d ''; . ex/util/assert -eqv $? 182
 
+$SCRIPT -b 'foo' -b 'bar'; . ex/util/assert -eqv $? 212
+$SCRIPT -b 'foo' -h 'bar' -b 'baz'; . ex/util/assert -eqv $? 213
+$SCRIPT -b '' -a 'bar'; . ex/util/assert -eqv $? 221
+$SCRIPT -h 'foo' -b ''; . ex/util/assert -eqv $? 222
+
 $SCRIPT -u 'foo' -o 'bar'; . ex/util/assert -eqv $? 251
 
 URL_TARGET="https://postman-echo.com/get"
@@ -188,5 +193,25 @@ rm "$OUTPUT"
 
 . ex/util/assert -s "$OUTPUT"
 . ex/util/assert -eqv "$URL_DATA_EXPECTED" "$(jq -Mcer ".data|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
+
+rm "$OUTPUT"
+URL_DATA_BINARY_EXPECTED="/tmp/$(date +%s)"
+echo "foo $(date +%s)" >> "$URL_DATA_BINARY_EXPECTED"
+echo "bar $(date +%s)" >> "$URL_DATA_BINARY_EXPECTED"
+echo "baz $(date +%s)" >> "$URL_DATA_BINARY_EXPECTED"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u '$URL_TARGET' -o '$OUTPUT' -b '$URL_DATA_BINARY_EXPECTED' $URL_POSTFIX -e 404"; \
+ . ex/util/assert -eqv $? 0
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u '$URL_TARGET' -o '$OUTPUT' -b '$URL_DATA_BINARY_EXPECTED' $URL_POSTFIX -x GET -e 404"; \
+ . ex/util/assert -eqv $? 0
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u '$URL_TARGET' -o '$OUTPUT' -b '$URL_DATA_BINARY_EXPECTED' $URL_POSTFIX -x POST -e 200"; \
+ . ex/util/assert -eqv $? 0
+
+. ex/util/assert -s "$OUTPUT"
+. ex/util/assert -eqv "$(cat "$URL_DATA_BINARY_EXPECTED")" "$(jq -Mcer ".data|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
 
 exit 0
