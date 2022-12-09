@@ -35,6 +35,8 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   -sfs) JSON_OPTION="select((.!=null)and(type==\"string\")and(.!=\"\"))";;
   -si) JSON_OPTION="select((.!=null)and(type==\"number\"))";;
   -sb) JSON_OPTION="select((.!=null)and(type==\"boolean\"))";;
+  -sa) JSON_OPTION="select((.!=null)and(type==\"array\"))";;
+  -sfa) JSON_OPTION="select((.!=null)and(type==\"array\")and(.!=[]))";;
   *) echo "Query option \"$JSON_QUERY_OPTION\" is not supported!"; exit 21;;
  esac
  JSON_QUERY_INDEX=$((2 + $((RELATIVE_INDEX * 3)) + 2))
