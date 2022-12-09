@@ -93,7 +93,8 @@ jobs:
           . ex/util/json_merge -v ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
           . ex/util/json_merge -v ASSETS ".+=[$ASSET]"
           ex/github/release/upload/asset.sh "$ASSETS"
-      - working-directory: workdir
+      - name: On success
+        working-directory: workdir
         run: |
           echo "Not implemented! check_state"; exit 1 # todo
           echo "Not implemented! on_success"; exit 1 # todo
