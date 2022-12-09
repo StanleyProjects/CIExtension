@@ -70,6 +70,24 @@ jobs:
           ex/github/assemble/commit.sh
       - working-directory: workdir
         run: |
-          echo "Not implemented! release"; exit 1 # todo
+          for it in $(cat repository/internal/env); do export $it; done
+          ex/util/require VERSION
+          BODY="{}"
+          TAG="${VERSION}-UNSTABLE"
+          . ex/util/json -f assemble/vcs/commit.json -sfs .sha GIT_COMMIT_SHA
+          . ex/util/jq/merge BODY ".name=\"$TAG\"" ".tag_name=\"$TAG\"" ".target_commitish=\"$GIT_COMMIT_SHA\""
+          . ex/util/json -f assemble/vcs/actions/run.json -si .run_number CI_BUILD_NUMBER -sfs .html_url CI_BUILD_HTML_URL
+          . ex/util/jq/merge BODY ".body=\"CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL)\""
+          . ex/util/jq/merge BODY '.draft=false' '.prerelease=true'
+          mkdir assemble/github
+          ex/github/release.sh "$BODY"
+          ASSET_NAME="CIExtension-${VERSION}-UNSTABLE.zip"
+          ASSETS="[]"
+          ASSET="{}"
+          . ex/util/jq/merge ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
+          . ex/util/jq/merge ASSETS ".+=[$ASSET]"
+          ex/github/release/upload/asset.sh "$ASSETS"
+      - working-directory: workdir
+        run: |
           echo "Not implemented! check_state"; exit 1 # todo
           echo "Not implemented! on_success"; exit 1 # todo
