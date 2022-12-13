@@ -7,6 +7,8 @@ if test $# -ne 1; then
 
 TAG="$1"
 
+. ex/util/require TAG
+
 ex/github/tag/test.sh "$TAG"
 if test $? -ne 0; then
- ex/github/workflow/tag/test/on_failed.sh; exit 21; fi
+ ex/github/workflow/tag/test/on_failed.sh "$TAG"; exit 21; fi
