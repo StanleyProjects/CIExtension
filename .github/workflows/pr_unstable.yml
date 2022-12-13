@@ -24,14 +24,14 @@ jobs:
           git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
           git fetch origin "$GIT_BRANCH_SRC"
           git checkout "$GIT_BRANCH_SRC"
-      - working-directory: workdir/prepare
+      - name: Pull request merge
+        working-directory: workdir/prepare
         env:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
-          repository/ex/util/json --base64 "${{secrets.VCS_TOKENS}}" \
-           -sfs .github.continuousi VCS_PAT
+          repository/ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
