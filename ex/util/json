@@ -22,7 +22,7 @@ case "$JSON_SOURCE_OPTION" in
   fi;;
  --base64)
   if test -z "$JSON_SOURCE"; then
-   echo "Source is empty!"; exit 121
+   echo "Source is empty!"; exit 124
   fi;;
  *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 13;;
 esac
@@ -83,9 +83,9 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   echo "Query: \"$JSON_QUERY\""
   echo "Variable: \"$JSON_VARIABLE\""
   case "$JSON_SOURCE_OPTION" in
-   -j | --json) echo "Parse json error!"; exit 41;;
+   -j | --json) echo "Parse json error! Source: $JSON_SOURCE"; exit 41;;
    -f | --file) echo "Parse \"$JSON_SOURCE\" error!"; exit 42;;
-   --base64) echo "Parse base64 json error!"; exit 41;;
+   --base64) echo "Parse base64 json error!"; exit 43;;
    *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 49;;
   esac
  fi
