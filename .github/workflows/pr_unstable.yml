@@ -31,8 +31,8 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
-          repository/ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           export VCS_PAT
+          repository/ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
