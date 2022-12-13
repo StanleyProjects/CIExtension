@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Workflow pull request check state..."
+echo "GitHub workflow pull request check state..."
 
 if test $# -ne 1; then
  echo "Script needs for 1 argument, but actual is $#!"; exit 11; fi
