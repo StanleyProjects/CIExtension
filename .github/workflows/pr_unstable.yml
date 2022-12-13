@@ -48,7 +48,7 @@ jobs:
           ex/github/assemble/repository.sh
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
-          ex/github/tag/test.sh "${VERSION}-UNSTABLE"
+          ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
       - name: Set up pull request
         working-directory: workdir
         env:
