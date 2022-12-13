@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if test $# -eq 0; then
+ echo "Empty arguments!"; exit 11
+fi
+
+for ((EXPORT_INDEX=1; EXPORT_INDEX<=$#; EXPORT_INDEX++)); do
+ EXPORT_VARIABLE="${!EXPORT_INDEX}"
+ if test -z "$EXPORT_VARIABLE"; then
+  echo "Variable name is empty!"; exit $((100+EXPORT_INDEX)); fi
+ export "$EXPORT_VARIABLE"
+done
