@@ -10,7 +10,7 @@ TAG="$1"
 . ex/util/require PR_NUMBER TAG
 
 ex/github/pr/close.sh \
- || . ex/util/throw 11 "Illegal state!"
+ || . ex/util/throw 21 "Illegal state!"
 
 . ex/util/json -f assemble/vcs/actions/run.json \
  -si .run_number CI_BUILD_NUMBER \
@@ -20,7 +20,7 @@ MESSAGE="Closed by CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL)
  - tag \`$TAG\` test  failed!"
 
 ex/github/pr/comment.sh "$MESSAGE" \
- || . ex/util/throw 12 "Illegal state!"
+ || . ex/util/throw 22 "Illegal state!"
 
 . ex/util/json -f assemble/vcs/repository/owner.json \
  -sfs .login REPOSITORY_OWNER_LOGIN \
@@ -59,4 +59,4 @@ The pull request [#$PR_NUMBER]($REPOSITORY_HTML_URL/pull/$PR_NUMBER)
  - closed by [$WORKER_NAME]($WORKER_HTML_URL)"
 
 ex/notification/telegram/send_message.sh "$MESSAGE" \
- || . ex/util/throw 21 "Illegal state!"
+ || . ex/util/throw 31 "Illegal state!"

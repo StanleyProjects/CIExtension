@@ -120,7 +120,7 @@ if test -z "$URL_METHOD"; then
  URL_METHOD="$URL_METHOD_DEFAULT"
 else
  case "$URL_METHOD" in
-  GET | POST) /bin/true;;
+  GET | POST | PATCH) /bin/true;;
   *) echo "Url method \"$URL_METHOD\" is not supported!"; exit 13;;
  esac
 fi
