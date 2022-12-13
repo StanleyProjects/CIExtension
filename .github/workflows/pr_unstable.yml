@@ -44,6 +44,7 @@ jobs:
         working-directory: workdir
         env:
           VCS_DOMAIN: 'https://api.github.com'
+          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           ex/github/assemble/repository.sh
           for it in $(cat repository/internal/env); do export $it; done
