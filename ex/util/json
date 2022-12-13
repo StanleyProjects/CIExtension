@@ -20,6 +20,10 @@ case "$JSON_SOURCE_OPTION" in
   elif [ ! -s "$JSON_SOURCE" ]; then
    echo "File \"$JSON_SOURCE\" is empty!"; exit 123
   fi;;
+ --base64)
+  if test -z "$JSON_SOURCE"; then
+   echo "Source is empty!"; exit 121
+  fi;;
  *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 13;;
 esac
 
@@ -57,6 +61,9 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   -f | --file)
    JSON_RESULT="$(jq -Mcer "${JSON_QUERY}|$JSON_OPTION" $JSON_SOURCE)"
    JSON_CODE=$?;;
+  --base64)
+   JSON_RESULT="$(echo "$JSON_SOURCE" | base64 -d | jq -Mcer "${JSON_QUERY}|$JSON_OPTION")"
+   JSON_CODE=$?;;
   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 22;;
  esac
  if test "$JSON_QUERY_OPTION" == '-sb'; then
@@ -78,7 +85,8 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   case "$JSON_SOURCE_OPTION" in
    -j | --json) echo "Parse json error!"; exit 41;;
    -f | --file) echo "Parse \"$JSON_SOURCE\" error!"; exit 42;;
-   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 43;;
+   --base64) echo "Parse base64 json error!"; exit 41;;
+   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 49;;
   esac
  fi
  printf -v "$JSON_VARIABLE" '%s' "$JSON_RESULT"
