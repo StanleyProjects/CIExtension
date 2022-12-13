@@ -30,11 +30,13 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
-          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
+          repository/ex/util/json --base64 "${{secrets.VCS_TOKENS}}" \
+           -sfs .github.continuousi VCS_PAT
           repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
+          echo "Not implemented!"; exit 1 # todo
       - working-directory: workdir
         run: |
           mv prepare/repository repository
