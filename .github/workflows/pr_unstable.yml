@@ -82,9 +82,18 @@ jobs:
           ex/util/require VERSION
           mkdir -p assemble/project/artifact
           ARTIFACT="CIExtension-${VERSION}-UNSTABLE.zip"
+          KEY_ALIAS='debug'
           $(ISSUER="$(pwd)" && cd "$ISSUER" && zip -r9 "assemble/project/artifact/$ARTIFACT" ci ex > /dev/null)
-          echo "Not implemented! sign"; exit 1 # todo
-          echo "Not implemented! check sign"; exit 1 # todo
+          . ex/util/json --base64 "${{secrets.KEYSTORES}}" \
+           -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
+           -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
+          ex/util/sign -i "assemble/project/artifact/$ARTIFACT" -s "assemble/project/artifact/${ARTIFACT}.sig" \
+           -k "$KEYSTORE" -p "$KEYSTORE_PASSWORD"
+          . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" \
+           -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
+          ACTUAL_FINGERPRINT="$(openssl pkcs12 -in "$KEYSTORE" -nokeys -passin pass:"$KEYSTORE_PASSWORD" | openssl x509 \
+           -exportcert -rfc -alias "${KEY_ALIAS}" | openssl x509 -noout -fingerprint -sha512)"
+          . ex/util/assert -eqv "SHA512 Fingerprint=$KEY_X509_SHA512" "$ACTUAL_FINGERPRINT"
           git -C repository push
           ex/github/assemble/commit.sh
       - name: GitHub release
