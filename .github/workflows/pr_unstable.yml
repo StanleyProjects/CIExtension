@@ -86,7 +86,7 @@ jobs:
            -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
           echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12"
           echo 'test...'
-          openssl pkcs12 -in "assemble/project/${KEY_ALIAS}.pkcs12" -nokeys -passin pass:"$KEYSTORE_PASSWORD" -out /tmp/ptox
+          openssl pkcs12 -legacy -in "assemble/project/${KEY_ALIAS}.pkcs12" -nokeys -passin pass:"$KEYSTORE_PASSWORD" -out /tmp/ptox
           openssl x509 -in /tmp/ptox -out /tmp/x.crt
           cat /tmp/x.crt
           openssl x509 -in /tmp/x.crt -checkend 0
