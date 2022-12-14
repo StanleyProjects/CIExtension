@@ -87,7 +87,7 @@ jobs:
           . ex/util/json --base64 "${{secrets.KEYSTORES}}" \
            -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
            -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
-          echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12 \
+          echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12"
           ex/util/sign -i "assemble/project/artifact/$ARTIFACT" -s "assemble/project/artifact/${ARTIFACT}.sig" \
            -k "$KEYSTORE" -p "$KEYSTORE_PASSWORD"
           . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" \
