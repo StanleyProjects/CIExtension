@@ -32,12 +32,12 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
  if test -z "$JSON_QUERY_OPTION"; then
   echo "Query option is empty!"; exit 101; fi
  case "$JSON_QUERY_OPTION" in
-  -ss) JSON_OPTION="select((.!=null)and(type==\"string\"))";;
-  -sfs) JSON_OPTION="select((.!=null)and(type==\"string\")and(.!=\"\"))";;
-  -si) JSON_OPTION="select((.!=null)and(type==\"number\"))";;
-  -sb) JSON_OPTION="select((.!=null)and(type==\"boolean\"))";;
-  -sa) JSON_OPTION="select((.!=null)and(type==\"array\"))";;
-  -sfa) JSON_OPTION="select((.!=null)and(type==\"array\")and(.!=[]))";;
+  -ss) JSON_OPTION='select((.!=null)and(type=="string"))';;
+  -sfs) JSON_OPTION='select((.!=null)and(type=="string")and(.!=""))';;
+  -si) JSON_OPTION='select((.!=null)and(type=="number"))';;
+  -sb) JSON_OPTION='select((.!=null)and(type=="boolean"))';;
+  -sa) JSON_OPTION='select((.!=null)and(type=="array"))';;
+  -sfa) JSON_OPTION='select((.!=null)and(type=="array")and(.!=[]))';;
   *) echo "Query option \"$JSON_QUERY_OPTION\" is not supported!"; exit 21;;
  esac
  JSON_QUERY_INDEX=$((2 + $((RELATIVE_INDEX * 3)) + 2))
@@ -57,22 +57,13 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
    JSON_RESULT="$(jq -Mcer "${JSON_QUERY}|$JSON_OPTION" $JSON_SOURCE)"
    JSON_CODE=$?;;
   --base64)
-   echo "$RELATIVE_INDEX) query $JSON_SOURCE_OPTION $JSON_QUERY_OPTION $JSON_VARIABLE..."
-   echo 'base64 decode...'
    DECODED="$(echo "$JSON_SOURCE" | base64 -d)"; CODE=$?
-   echo "decoded code: $CODE"
    if test $CODE -ne 0; then
     echo "Decode base64 error!"; exit 23; fi
-   echo 'json query...'
-   JSON_PARAMS="${JSON_QUERY}|$JSON_OPTION"
-   echo "json params: $JSON_PARAMS"
-   JSON_RESULT="$(echo "$DECODED" | jq -Mcer "$JSON_PARAMS")"
-#   JSON_RESULT="$(echo "$DECODED" | jq -Mcer "${JSON_QUERY}|$JSON_OPTION")"
-   JSON_CODE=$?
-   echo "json query code: $JSON_CODE";;
+   JSON_RESULT="$(echo "$DECODED" | jq -Mcer "${JSON_QUERY}|$JSON_OPTION")"
+   JSON_CODE=$?;;
   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 22;;
  esac
- echo 'check boolean...'
  if test "$JSON_QUERY_OPTION" == '-sb'; then
   if test $JSON_CODE -eq 0; then
    if test "$JSON_RESULT" != 'true'; then
@@ -85,7 +76,6 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
    JSON_CODE=0
   fi
  fi
- echo "code: $JSON_CODE"
  if test $JSON_CODE -ne 0; then
   echo "Query option: \"$JSON_QUERY_OPTION\""
   echo "Query: \"$JSON_QUERY\""
@@ -97,7 +87,6 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
    *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 49;;
   esac
  fi
- echo "printf..."
  printf -v "$JSON_VARIABLE" '%s' "$JSON_RESULT"
  if test $? -ne 0; then
   echo "Set value error!"; exit 104
