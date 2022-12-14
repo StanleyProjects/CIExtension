@@ -85,19 +85,26 @@ else
 fi
 
 if test -z "$SIGN_KEYSTORE_TYPE"; then
- SIGN_KEYSTORE_TYPE="$SIGN_KEYSTORE_TYPE_DEFAULT"
-else
- case "$SIGN_KEYSTORE_TYPE" in
-  pkcs12) /bin/true;;
-  *) echo "Keystore type \"$SIGN_KEYSTORE_TYPE\" is not supported!"; exit 14;;
- esac
-fi
+ SIGN_KEYSTORE_TYPE="$SIGN_KEYSTORE_TYPE_DEFAULT"; fi
+case "$SIGN_KEYSTORE_TYPE" in
+ pkcs12)
+  OPENSSL_VERSION="$(openssl version)"
+  if [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 1.'* ]]; then
+   KEYSTORE_TYPE='pkcs12'
+  elif [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 3.'* ]]; then
+   KEYSTORE_TYPE='pkcs12 -legacy'
+  else
+   echo "Openssl version error!"; exit 19
+  fi;;
+ *) echo "Keystore type \"$SIGN_KEYSTORE_TYPE\" is not supported!"; exit 14;;
+esac
 
 if test -z "$SIGN_EXPIRES"; then
  SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
 
 case "$SIGN_EXPIRES" in
- check) openssl x509 -in <(openssl "$SIGN_KEYSTORE_TYPE" -in "$SIGN_KEYSTORE" -nokeys -passin pass:"$SIGN_PASSWORD" \
+ check) openssl x509 -in <(
+   /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" \
    | openssl x509) -checkend 0; CODE=$?
   if test $CODE -ne 0; then
    echo "Check failed!"; exit 15; fi;;
@@ -109,17 +116,18 @@ case "$SIGN_TYPE" in
  sign)
   if test -f "$SIGNATURE"; then
    echo "Signature exists!"; exit 48; fi
-  openssl dgst -sha512 -sign <(openssl "$SIGN_KEYSTORE_TYPE" -in "$SIGN_KEYSTORE" \
-    -nocerts -passin pass:"$SIGN_PASSWORD" -passout pass:"$SIGN_PASSWORD") \
-   -passin pass:"$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
+  openssl dgst -sha512 -sign <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts -passin 'pass:$SIGN_PASSWORD' -passout 'pass:$SIGN_PASSWORD'" \
+   ) -passin pass:"$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
   if test $? -ne 0; then
    echo "Signature \"$SIGN_ISSUER\" error!"; exit 251; fi;;
  verify)
   if [ ! -s "$SIGNATURE" ]; then
    echo "Signature does not exist!"; exit 49; fi
-  openssl dgst -sha512 -verify <(openssl "$SIGN_KEYSTORE_TYPE" -in "$SIGN_KEYSTORE" \
-    -nokeys -passin pass:"$SIGN_PASSWORD" | openssl x509 -pubkey -noout) \
-   -signature "$SIGNATURE" "$SIGN_ISSUER"
+  openssl dgst -sha512 -verify <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" \
+     | openssl x509 -pubkey -noout
+   ) -signature "$SIGNATURE" "$SIGN_ISSUER"
   if test $? -ne 0; then
    echo "Verify \"$SIGN_ISSUER\" error!"; exit 252; fi;;
  *) echo "Sign type \"$SIGN_TYPE\" is not supported!"; exit 14;;
