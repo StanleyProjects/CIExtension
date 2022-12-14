@@ -31,12 +31,12 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
-          export VCS_PAT
-          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
+          export VCS_PAT
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          repository/ex/github/assemble/worker.sh
       - working-directory: workdir
         run: |
           mv prepare/repository repository
@@ -63,6 +63,9 @@ jobs:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
+          echo "test $(date +%s)"
+          ex/util/export VCS_PAT TELEGRAM_BOT_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
