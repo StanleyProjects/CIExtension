@@ -72,12 +72,9 @@ jobs:
            -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
            -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
           ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
-      - name: VCS push
+      - name: Artifacts
         working-directory: workdir
-        env:
-          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
-          ex/github/workflow/pr/commit.sh
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           mkdir -p assemble/project/artifact
@@ -88,14 +85,21 @@ jobs:
            -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
            -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
           echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12"
+          echo 'sign...'
           ex/util/sign -i "assemble/project/artifact/$ARTIFACT" -s "assemble/project/artifact/${ARTIFACT}.sig" \
            -k "assemble/project/${KEY_ALIAS}.pkcs12" -p "$KEYSTORE_PASSWORD"
-          . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" \
-           -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
+          . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
           ACTUAL_FINGERPRINT="$(openssl pkcs12 -in "assemble/project/${KEY_ALIAS}.pkcs12" \
            -nokeys -passin pass:"$KEYSTORE_PASSWORD" | openssl x509 \
            -exportcert -rfc -alias "${KEY_ALIAS}" | openssl x509 -noout -fingerprint -sha512)"
+          echo 'check fingerprint...'
           . ex/util/assert -eqv "SHA512 Fingerprint=$KEY_X509_SHA512" "$ACTUAL_FINGERPRINT"
+      - name: VCS push
+        working-directory: workdir
+        env:
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          ex/github/workflow/pr/commit.sh
           git -C repository push
           ex/github/assemble/commit.sh
       - name: GitHub release
