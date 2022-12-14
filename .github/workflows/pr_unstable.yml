@@ -101,10 +101,11 @@ jobs:
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           ex/github/release.sh "$BODY"
           ASSET_NAME="CIExtension-${VERSION}-UNSTABLE.zip"
-          ASSETS="[]"
-          ASSET="{}"
+          ASSETS='[]'
+          ASSET='{}'
           . ex/util/json_merge -v ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
           . ex/util/json_merge -v ASSETS ".+=[$ASSET]"
+          echo "Not implemented! sign"; exit 1 # todo
           ex/github/release/upload/asset.sh "$ASSETS"
       - name: On success
         working-directory: workdir
