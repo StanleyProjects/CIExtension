@@ -15,19 +15,26 @@ echo "date $(date +%s)" > "$FILE"
 rm "${FILE}.empty"
 touch "${FILE}.empty"
 
-KEY_FILE="/tmp/sign.check.key"
-rm "$KEY_FILE"
-KEY_PASSWORD="$(date +%s)"
+rm "${FILE}.not"
+[ -f "${FILE}.not" ] && . ex/util/throw 101 "Illegal state!"
+
+KEY_FILE_NAME='/tmp/sign.check.key'
+KEYSTORE_TYPE='pkcs12'
 KEY_ALIAS='foo'
-KEY_CRT="/tmp/sign.check.crt"
+
+# 1
+
+KEY_FILE="${KEY_FILE_NAME}.1"
+rm "$KEY_FILE"
+KEY_PASSWORD='password1'
+KEY_CRT="${KEY_FILE}.crt"
 rm "$KEY_CRT"
 openssl req -newkey rsa:4096 -keyout "$KEY_FILE" -passout pass:"$KEY_PASSWORD" \
  -x509 -days 3650 -subj "/CN=$KEY_ALIAS" -out "$KEY_CRT"
 . ex/util/assert -s "$KEY_FILE"
 . ex/util/assert -s "$KEY_CRT"
 
-KEYSTORE_TYPE='pkcs12'
-KEYSTORE="/tmp/sign.check.$KEYSTORE_TYPE"
+KEYSTORE="${KEY_FILE}.$KEYSTORE_TYPE"
 rm "$KEYSTORE"
 openssl "$KEYSTORE_TYPE" \
  -passout pass:"$KEY_PASSWORD" -passin pass:"$KEY_PASSWORD" \
@@ -35,6 +42,49 @@ openssl "$KEYSTORE_TYPE" \
  -in "$KEY_CRT" \
  -export -out "$KEYSTORE" -name "$KEY_ALIAS"
 . ex/util/assert -s "$KEYSTORE"
+
+openssl x509 -in <(openssl "$KEYSTORE_TYPE" -in "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" \
+   -nokeys -passin pass:"$KEY_PASSWORD" | openssl x509) -checkend 0 \
+ || . ex/util/throw 102 "Check error!"
+
+rm "${FILE}1.sig"
+openssl dgst -sha512 -sign <(openssl "$KEYSTORE_TYPE" -in "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" \
+  -nocerts -passin pass:"$KEY_PASSWORD" -passout pass:"$KEY_PASSWORD") \
+ -passin pass:"$KEY_PASSWORD" -out "${FILE}1.sig" "$FILE" \
+ || . ex/util/throw 101 "Sign error!"
+
+# 2
+
+KEY_FILE="${KEY_FILE_NAME}.2"
+rm "$KEY_FILE"
+KEY_PASSWORD='password2'
+KEY_CRT="${KEY_FILE}.crt"
+rm "$KEY_CRT"
+openssl req -newkey rsa:4096 -keyout "$KEY_FILE" -passout pass:"$KEY_PASSWORD" \
+ -x509 -days 3650 -subj "/CN=$KEY_ALIAS" -out "$KEY_CRT"
+. ex/util/assert -s "$KEY_FILE"
+. ex/util/assert -s "$KEY_CRT"
+
+KEYSTORE="${KEY_FILE}.$KEYSTORE_TYPE"
+rm "$KEYSTORE"
+openssl "$KEYSTORE_TYPE" \
+ -passout pass:"$KEY_PASSWORD" -passin pass:"$KEY_PASSWORD" \
+ -inkey "$KEY_FILE" \
+ -in "$KEY_CRT" \
+ -export -out "$KEYSTORE" -name "$KEY_ALIAS"
+. ex/util/assert -s "$KEYSTORE"
+
+openssl x509 -in <(openssl "$KEYSTORE_TYPE" -in "${KEY_FILE_NAME}.2.$KEYSTORE_TYPE" \
+   -nokeys -passin pass:"$KEY_PASSWORD" | openssl x509) -checkend 0 \
+ || . ex/util/throw 102 "Check error!"
+
+rm "${FILE}2.sig"
+openssl dgst -sha512 -sign <(openssl "$KEYSTORE_TYPE" -in "${KEY_FILE_NAME}.2.$KEYSTORE_TYPE" \
+  -nocerts -passin pass:"$KEY_PASSWORD" -passout pass:"$KEY_PASSWORD") \
+ -passin pass:"$KEY_PASSWORD" -out "${FILE}2.sig" "$FILE" \
+ || . ex/util/throw 101 "Sign error!"
+
+# todo expires
 
 echo "
 Check arguments..."
@@ -83,11 +133,36 @@ $SCRIPT -s '' -a 'a2' -a 'a3' -a 'a4' -a 'a5' -a 'a6' -a 'a7' -a 'a8'; . ex/util
 $SCRIPT -p 'a1' -p 'a2' -a 'a3' -a 'a4' -a 'a5' -a 'a6' -a 'a7' -a 'a8'; . ex/util/assert -eqv $? 152
 $SCRIPT -p '' -a 'a2' -a 'a3' -a 'a4' -a 'a5' -a 'a6' -a 'a7' -a 'a8'; . ex/util/assert -eqv $? 161
 
-echo "Not implemented!"; exit 1 # todo
+echo 'check expires...'
+$SCRIPT -i "$FILE" -s 'foo' -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p 'bar'; . ex/util/assert -eqv $? 15
+KEY_PASSWORD='password1'
+echo 'check signature exists...'
+$SCRIPT -i "$FILE" -s "${FILE}.empty" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; \
+ . ex/util/assert -eqv $? 48
+echo 'check password...'
+$SCRIPT -i "$FILE" -e nocheck -s "${FILE}.not" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p 'foo'; \
+ . ex/util/assert -eqv $? 251
+rm "${FILE}.not"
+$SCRIPT -i "$FILE" -t verify -s "${FILE}.not" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; \
+ . ex/util/assert -eqv $? 49
+$SCRIPT -i "$FILE" -t verify -s "${FILE}2.sig" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; \
+ . ex/util/assert -eqv $? 252
 
 echo "
 Check success..."
 
-echo "Not implemented!"; exit 1 # todo
+KEY_PASSWORD='password1'
+$SCRIPT -i "$FILE" -s "${FILE}.not" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; . ex/util/assert -eqv $? 0
+rm "${FILE}.not"
+
+rm "${FILE}.s1"
+$SCRIPT -i "$FILE" -s "${FILE}.s1" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; . ex/util/assert -eqv $? 0
+. ex/util/assert -s "$FILE"
+openssl dgst -sha512 -verify <(openssl "$KEYSTORE_TYPE" -in "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" \
+  -nokeys -passin pass:"$KEY_PASSWORD" | openssl x509 -pubkey -noout) \
+ -signature "${FILE}.s1" "$FILE" \
+ || . ex/util/throw 101 "Sign error!"
+
+$SCRIPT -i "$FILE" -t verify -s "${FILE}1.sig" -k "${KEY_FILE_NAME}.1.$KEYSTORE_TYPE" -p "$KEY_PASSWORD"; . ex/util/assert -eqv $? 0
 
 exit 0

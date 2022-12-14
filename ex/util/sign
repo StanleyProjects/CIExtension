@@ -97,7 +97,10 @@ if test -z "$SIGN_EXPIRES"; then
  SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
 
 case "$SIGN_EXPIRES" in
- check) echo "Not implemented! check"; exit 1;;
+ check) openssl x509 -in <(openssl "$SIGN_KEYSTORE_TYPE" -in "$SIGN_KEYSTORE" -nokeys -passin pass:"$SIGN_PASSWORD" \
+   | openssl x509) -checkend 0; CODE=$?
+  if test $CODE -ne 0; then
+   echo "Check failed!"; exit 15; fi;;
  nocheck) /bin/true;;
  *) echo "Expires type \"$SIGN_EXPIRES\" is not supported!"; exit 16;;
 esac
@@ -112,7 +115,7 @@ case "$SIGN_TYPE" in
   if test $? -ne 0; then
    echo "Signature \"$SIGN_ISSUER\" error!"; exit 251; fi;;
  verify)
-  if [ ! -f "$SIGNATURE" ]; then
+  if [ ! -s "$SIGNATURE" ]; then
    echo "Signature does not exist!"; exit 49; fi
   openssl dgst -sha512 -verify <(openssl "$SIGN_KEYSTORE_TYPE" -in "$SIGN_KEYSTORE" \
     -nokeys -passin pass:"$SIGN_PASSWORD" | openssl x509 -pubkey -noout) \
