@@ -52,8 +52,7 @@ jobs:
           ex/github/assemble/repository/owner.sh
           ex/github/assemble/pr.sh
           ex/github/assemble/pr/commit.sh
-          export VCS_PAT
-          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          for it in $(cat repository/internal/env); do export $it; done
           ex/github/assemble/worker.sh
           export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
@@ -63,8 +62,6 @@ jobs:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
-          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
           . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
            -sfs .bot.continuousibot.id TELEGRAM_BOT_ID \
