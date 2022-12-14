@@ -214,4 +214,19 @@ rm "$OUTPUT"
 . ex/util/assert -s "$OUTPUT"
 . ex/util/assert -eqv "$(cat "$URL_DATA_BINARY_EXPECTED")" "$(jq -Mcer ".data|select((.!=null)and(type==\"string\")and(.!=\"\"))" "$OUTPUT")"
 
+URL_TARGET="https://postman-echo.com/patch"
+URL_KEY='foo'
+URL_DATA_EXPECTED="{\"$URL_KEY\":$(date +%s)}"
+URL_POSTFIX='-h "Content-Type: application/json"'
+
+rm "$OUTPUT"
+[ -f "$OUTPUT" ] && . ex/util/throw 101 "Illegal state!"
+/bin/bash -c "$SCRIPT -u \"$URL_TARGET\" -o \"$OUTPUT\" -d '$URL_DATA_EXPECTED' $URL_POSTFIX -x PATCH -e 200"; \
+ . ex/util/assert -eqv $? 0
+
+. ex/util/assert -s "$OUTPUT"
+. ex/util/assert -eqv \
+ "$(echo "$URL_DATA_EXPECTED" | jq -Mcer ".${URL_KEY}|select((.!=null)and(type==\"number\"))")" \
+ "$(jq -Mcer ".json.${URL_KEY}|select((.!=null)and(type==\"number\"))" "$OUTPUT")"
+
 exit 0

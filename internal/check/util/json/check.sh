@@ -74,21 +74,26 @@ Check sources..."
 $SCRIPT -j '' 1 2 3; . ex/util/assert -eqv $? 121
 $SCRIPT -f "${FILE}.not" 1 2 3; . ex/util/assert -eqv $? 122
 $SCRIPT -f "${FILE}.empty" 1 2 3; . ex/util/assert -eqv $? 123
+$SCRIPT --base64 '*' -si 2 3; . ex/util/assert -eqv $? 23
+
+SOURCE_BASE64="$(echo "$SOURCE" | base64)"
 
 SOURCES=(
- '-f' "$FILE"
- '-j' "$SOURCE"
+ '-j' "$SOURCE" 41
+ '-f' "$FILE" 42
+ '--base64' "$SOURCE_BASE64" 43
 )
-for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
- SOURCE_OPTION="${SOURCES[$((SOURCE_INDEX * 2 + 0))]}"
- SOURCE="${SOURCES[$((SOURCE_INDEX * 2 + 1))]}"
+for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 3)); SOURCE_INDEX++)); do
+ SOURCE_OPTION="${SOURCES[$((SOURCE_INDEX * 3 + 0))]}"
+ ACTUAL_SOURCE="${SOURCES[$((SOURCE_INDEX * 3 + 1))]}"
+ EXPECTED=${SOURCES[$((SOURCE_INDEX * 3 + 2))]}
  echo "Source option: $SOURCE_OPTION"
  echo "
  Check query options..."
 
  QUERIES=('a' '-a' 'foo' '1')
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} 2 3; . ex/util/assert -eqv $? 21
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" ${QUERIES[$QUERY_INDEX]} 2 3; . ex/util/assert -eqv $? 21
  done
 
  echo "
@@ -96,12 +101,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
 
  QUERIES=('-si a' '-sfs -a' '-sb foo')
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" ${QUERIES[$QUERY_INDEX]} 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-si'
@@ -117,12 +117,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-sfs'
@@ -139,12 +134,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-ss'
@@ -160,12 +150,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-sb'
@@ -181,12 +166,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-sa'
@@ -202,12 +182,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  QUERY_OPTION='-sfa'
@@ -224,12 +199,7 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
   '.val_null'
  )
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  case "$SOURCE_OPTION" in
-   '-j') EXPECTED=41;;
-   '-f') EXPECTED=42;;
-   *) echo "Source option \"$SOURCE_OPTION\" is not supported!"; exit 21;;
-  esac
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" "$QUERY_OPTION" "${QUERIES[$QUERY_INDEX]}" 3; . ex/util/assert -eqv $? $EXPECTED
  done
 
  echo "
@@ -237,14 +207,14 @@ for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
 
  QUERIES=('' '-si .val_int VAL_INT')
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} '' 2 3; . ex/util/assert -eqv $? 101
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} -si '' 3; . ex/util/assert -eqv $? 102
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" ${QUERIES[$QUERY_INDEX]} -si 2 ''; . ex/util/assert -eqv $? 103
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" ${QUERIES[$QUERY_INDEX]} '' 2 3; . ex/util/assert -eqv $? 101
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" ${QUERIES[$QUERY_INDEX]} -si '' 3; . ex/util/assert -eqv $? 102
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" ${QUERIES[$QUERY_INDEX]} -si 2 ''; . ex/util/assert -eqv $? 103
  done
 
  QUERIES=('1' '2' '42' '-a' '/foo')
  for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
-  $SCRIPT "$SOURCE_OPTION" "$SOURCE" -si .val_int "${QUERIES[$QUERY_INDEX]}"; . ex/util/assert -eqv $? 104
+  $SCRIPT "$SOURCE_OPTION" "$ACTUAL_SOURCE" -si .val_int "${QUERIES[$QUERY_INDEX]}"; . ex/util/assert -eqv $? 104
  done
 done
 
@@ -254,6 +224,7 @@ Check success..."
 SOURCES=(
  '-f' "$FILE"
  '-j' "$SOURCE"
+ '--base64' "$SOURCE_BASE64"
 )
 for ((SOURCE_INDEX=0; SOURCE_INDEX<$((${#SOURCES[@]} / 2)); SOURCE_INDEX++)); do
  SOURCE_OPTION="${SOURCES[$((SOURCE_INDEX * 2 + 0))]}"

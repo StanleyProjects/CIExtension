@@ -24,42 +24,54 @@ jobs:
           git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
           git fetch origin "$GIT_BRANCH_SRC"
           git checkout "$GIT_BRANCH_SRC"
-      - working-directory: workdir/prepare
+      - name: Pull request merge
+        working-directory: workdir/prepare
         env:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           mkdir ex; cp -r repository/ex/util ex/util
-          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
-          repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
+          export VCS_PAT
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          repository/ex/github/assemble/worker.sh
           repository/ex/github/workflow/pr/merge.sh
       - working-directory: workdir
         run: |
           mv prepare/repository repository
           rm -rf prepare
           cp -r repository/ex ex
-      - name: Check version
-        working-directory: workdir
-        env:
-          VCS_DOMAIN: 'https://api.github.com'
-        run: |
-          ex/github/assemble/repository.sh
-          for it in $(cat repository/internal/env); do export $it; done
-          ex/util/require VERSION
-          ex/github/tag/test.sh "${VERSION}-UNSTABLE"
       - name: Set up pull request
         working-directory: workdir
         env:
           VCS_DOMAIN: 'https://api.github.com'
           PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
-          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
-          ex/github/assemble/worker.sh
+          ex/github/assemble/repository.sh
+          ex/github/assemble/repository/owner.sh
           ex/github/assemble/pr.sh
+          export VCS_PAT
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          ex/github/assemble/worker.sh
+          ex/github/assemble/pr/commit.sh
           export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
+      - name: Check version
+        working-directory: workdir
+        env:
+          VCS_DOMAIN: 'https://api.github.com'
+          PR_NUMBER: ${{github.event.pull_request.number}}
+        run: |
+          . ex/util/export VCS_PAT TELEGRAM_BOT_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          for it in $(cat repository/internal/env); do export $it; done
+          ex/util/require VERSION
+          . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
+           -si .bot.continuousibot.id TELEGRAM_BOT_ID \
+           -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
+           -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
+          ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
       - name: VCS push
         working-directory: workdir
         env:
@@ -77,7 +89,7 @@ jobs:
         run: |
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
-          BODY="{}"
+          BODY='{}'
           TAG="${VERSION}-UNSTABLE"
           . ex/util/json -f assemble/vcs/commit.json -sfs .sha GIT_COMMIT_SHA
           . ex/util/json_merge -v BODY ".name=\"$TAG\"" ".tag_name=\"$TAG\"" ".target_commitish=\"$GIT_COMMIT_SHA\""
@@ -85,7 +97,8 @@ jobs:
           . ex/util/json_merge -v BODY ".body=\"CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL)\""
           . ex/util/json_merge -v BODY '.draft=false' '.prerelease=true'
           mkdir assemble/github
-          export VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
+          export VCS_PAT
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           ex/github/release.sh "$BODY"
           ASSET_NAME="CIExtension-${VERSION}-UNSTABLE.zip"
           ASSETS="[]"
@@ -93,7 +106,22 @@ jobs:
           . ex/util/json_merge -v ASSET ".name=\"$ASSET_NAME\"" ".label=\"$ASSET_NAME\"" ".path=\"assemble/project/artifact/$ASSET_NAME\""
           . ex/util/json_merge -v ASSETS ".+=[$ASSET]"
           ex/github/release/upload/asset.sh "$ASSETS"
-      - working-directory: workdir
+      - name: On success
+        working-directory: workdir
+        env:
+          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
-          echo "Not implemented! check_state"; exit 1 # todo
+          ex/github/workflow/pr/check_state.sh 'closed'
+          for it in $(cat repository/internal/env); do export $it; done
+          ex/util/require VERSION
+          TAG="${VERSION}-UNSTABLE"
+          . ex/util/json -f assemble/vcs/actions/run.json \
+           -si .run_number CI_BUILD_NUMBER \
+           -sfs .html_url CI_BUILD_HTML_URL
+          . ex/util/json -f assemble/vcs/repository.json \
+           -sfs .name REPOSITORY_NAME \
+           -sfs .html_url REPOSITORY_HTML_URL
+          MESSAGE="Merged by CI build [#$CI_BUILD_NUMBER]($CI_BUILD_HTML_URL) \
+           - release [$TAG]($REPOSITORY_HTML_URL/releases/tag/$TAG)"
+          ex/github/pr/comment.sh "$MESSAGE"
           echo "Not implemented! on_success"; exit 1 # todo
