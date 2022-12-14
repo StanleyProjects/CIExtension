@@ -33,10 +33,10 @@ jobs:
           mkdir ex; cp -r repository/ex/util ex/util
           repository/ex/github/assemble/repository.sh
           repository/ex/github/assemble/pr.sh
-          repository/ex/github/workflow/pr/merge.sh
           export VCS_PAT
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           repository/ex/github/assemble/worker.sh
+          repository/ex/github/workflow/pr/merge.sh
       - working-directory: workdir
         run: |
           mv prepare/repository repository
@@ -51,10 +51,10 @@ jobs:
           ex/github/assemble/repository.sh
           ex/github/assemble/repository/owner.sh
           ex/github/assemble/pr.sh
-          ex/github/assemble/pr/commit.sh
           export VCS_PAT
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           ex/github/assemble/worker.sh
+          ex/github/assemble/pr/commit.sh
           export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
       - name: Check version
