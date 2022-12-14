@@ -89,10 +89,10 @@ jobs:
            -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
           echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12"
           ex/util/sign -i "assemble/project/artifact/$ARTIFACT" -s "assemble/project/artifact/${ARTIFACT}.sig" \
-           -k "$KEYSTORE" -p "$KEYSTORE_PASSWORD"
+           -k "assemble/project/${KEY_ALIAS}.pkcs12" -p "$KEYSTORE_PASSWORD"
           . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" \
            -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
-          ACTUAL_FINGERPRINT="$(openssl pkcs12 -in "assemble/project/${KEY_ALIAS}.pkcs12 \
+          ACTUAL_FINGERPRINT="$(openssl pkcs12 -in "assemble/project/${KEY_ALIAS}.pkcs12" \
            -nokeys -passin pass:"$KEYSTORE_PASSWORD" | openssl x509 \
            -exportcert -rfc -alias "${KEY_ALIAS}" | openssl x509 -noout -fingerprint -sha512)"
           . ex/util/assert -eqv "SHA512 Fingerprint=$KEY_X509_SHA512" "$ACTUAL_FINGERPRINT"
