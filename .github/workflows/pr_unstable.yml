@@ -67,12 +67,10 @@ jobs:
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           for it in $(cat repository/internal/env); do export $it; done
           ex/util/require VERSION
-          echo "telegram..."
           . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
-           -sfs .bot.continuousibot.id TELEGRAM_BOT_ID \
+           -si .bot.continuousibot.id TELEGRAM_BOT_ID \
            -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
            -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
-          echo "test..."
           ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
       - name: VCS push
         working-directory: workdir
