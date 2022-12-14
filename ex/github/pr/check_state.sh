@@ -12,11 +12,13 @@ EXPECTED_STATE="$1"
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .url REPOSITORY_URL
 
+OUTPUT="assemble/vcs/pr${PR_NUMBER}.json"
+rm "$OUTPUT"
 ex/util/url -u "$REPOSITORY_URL/pulls/$PR_NUMBER" \
- -o "assemble/vcs/pr${PR_NUMBER}.json" \
+ -o "$OUTPUT" \
  || . ex/util/throw 21 "Get pull request #$PR_NUMBER error!"
 
-. ex/util/json -f "assemble/vcs/pr${PR_NUMBER}.json" \
+. ex/util/json -f "$OUTPUT" \
  -sfs .state ACTUAL_STATE
 
 . ex/util/assert -eq EXPECTED_STATE ACTUAL_STATE
