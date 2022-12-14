@@ -15,6 +15,8 @@ SIGNATURE=''
 SIGN_PASSWORD=''
 SIGN_KEYSTORE_TYPE=''
 SIGN_KEYSTORE_TYPE_DEFAULT='pkcs12'
+SIGN_EXPIRES=''
+SIGN_EXPIRES_DEFAULT='check'
 
 for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
  SIGN_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
@@ -54,6 +56,11 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
    SIGN_PASSWORD="${!SIGN_VALUE_INDEX}"
    if test -z "$SIGN_PASSWORD"; then
     echo "Password is empty!"; exit $((160 + RELATIVE_INDEX + 1)); fi;;
+  -e) if [ ! -z "$SIGN_EXPIRES" ]; then
+    echo "Expires is already set!"; exit $((170 + RELATIVE_INDEX + 1)); fi
+   SIGN_EXPIRES="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_EXPIRES"; then
+    echo "Expires is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi;;
   *) echo "Sign option \"$SIGN_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
  esac
 done
@@ -85,6 +92,15 @@ else
   *) echo "Keystore type \"$SIGN_KEYSTORE_TYPE\" is not supported!"; exit 14;;
  esac
 fi
+
+if test -z "$SIGN_EXPIRES"; then
+ SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
+
+case "$SIGN_EXPIRES" in
+ check) echo "Not implemented! check"; exit 1;;
+ nocheck) /bin/true;;
+ *) echo "Expires type \"$SIGN_EXPIRES\" is not supported!"; exit 16;;
+esac
 
 case "$SIGN_TYPE" in
  sign)

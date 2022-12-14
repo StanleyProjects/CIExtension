@@ -60,7 +60,6 @@ for ((QUERY_INDEX=0; QUERY_INDEX<${#QUERIES[@]}; QUERY_INDEX++)); do
  $SCRIPT -h 'foo' -c "${QUERIES[$QUERY_INDEX]}"; . ex/util/assert -eqv $? 132
 done
 
-
 $SCRIPT -m 1 -m 'bar'; . ex/util/assert -eqv $? 142
 $SCRIPT -m 1 -h 'bar' -m 'baz'; . ex/util/assert -eqv $? 143
 QUERIES=(
