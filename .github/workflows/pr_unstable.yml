@@ -69,9 +69,9 @@ jobs:
           ex/util/require VERSION
           echo "telegram..."
           . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
-           -sfi .bot.continuousibot.id TELEGRAM_BOT_ID \
+           -sfs .bot.continuousibot.id TELEGRAM_BOT_ID \
            -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
-           -sfi .bot.kepocnhh.id TELEGRAM_CHAT_ID
+           -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
           echo "test..."
           ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
       - name: VCS push
