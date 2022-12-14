@@ -69,10 +69,14 @@ for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$VARIABLES; RELATIVE_INDEX++)); do
   --base64)
    echo 'base64 decode...'
    DECODED="$(echo "$JSON_SOURCE" | base64 -d)"; CODE=$?
+   echo "decoded code: $CODE"
    if test $CODE -ne 0; then
     echo "Decode base64 error!"; exit 23; fi
+   echo 'json query...'
    JSON_RESULT="$(echo "$DECODED" | jq -Mcer "${JSON_QUERY}|$JSON_OPTION")"
-   JSON_CODE=$?;;
+   echo 'json result...'
+   JSON_CODE=$?
+   echo "json query code: $JSON_CODE";;
   *) echo "Source option \"$JSON_SOURCE_OPTION\" is not supported!"; exit 22;;
  esac
  echo 'check boolean...'
