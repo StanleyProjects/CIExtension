@@ -52,7 +52,8 @@ jobs:
           ex/github/assemble/repository/owner.sh
           ex/github/assemble/pr.sh
           ex/github/assemble/pr/commit.sh
-          for it in $(cat repository/internal/env); do export $it; done
+          export VCS_PAT
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
           ex/github/assemble/worker.sh
           export CI_BUILD_ID=$GITHUB_RUN_ID
           ex/github/assemble/actions/run.sh
