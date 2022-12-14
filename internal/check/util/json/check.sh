@@ -74,6 +74,7 @@ Check sources..."
 $SCRIPT -j '' 1 2 3; . ex/util/assert -eqv $? 121
 $SCRIPT -f "${FILE}.not" 1 2 3; . ex/util/assert -eqv $? 122
 $SCRIPT -f "${FILE}.empty" 1 2 3; . ex/util/assert -eqv $? 123
+$SCRIPT --base64 '*' -si 2 3; . ex/util/assert -eqv $? 23
 
 SOURCE_BASE64="$(echo "$SOURCE" | base64)"
 
