@@ -91,7 +91,7 @@ jobs:
           ACTUAL_FINGERPRINT="$(openssl pkcs12 -legacy -in "assemble/project/${KEY_ALIAS}.pkcs12" \
             -nokeys -passin "pass:$KEYSTORE_PASSWORD" | openssl x509 -noout -fingerprint -sha512)"
           EXPECTED_FINGERPRINT="SHA512 Fingerprint=$KEY_X509_SHA512"
-          . ex/util/assert -eqv "${ACTUAL_FINGERPRINT^}" "${EXPECTED_FINGERPRINT^}"
+          . ex/util/assert -eqv "${ACTUAL_FINGERPRINT^^}" "${EXPECTED_FINGERPRINT^^}"
       - name: VCS push
         working-directory: workdir
         env:
