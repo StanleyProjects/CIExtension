@@ -1,0 +1,138 @@
+#!/bin/bash
+
+if test $# -lt 8; then
+ echo "Script needs more arguments, but actual is $#!"; exit 11
+elif test $(($# % 2)) -ne 0; then
+ echo "Arguments error!"; exit 12
+fi
+
+SIGN_OPTION=''
+SIGN_KEYSTORE=''
+SIGN_ISSUER=''
+SIGN_TYPE_DEFAULT='sign'
+SIGN_TYPE=''
+SIGNATURE=''
+SIGN_PASSWORD=''
+SIGN_KEYSTORE_TYPE=''
+SIGN_KEYSTORE_TYPE_DEFAULT='pkcs12'
+SIGN_EXPIRES=''
+SIGN_EXPIRES_DEFAULT='check'
+
+for ((RELATIVE_INDEX=0; RELATIVE_INDEX<$(($# / 2)); RELATIVE_INDEX++)); do
+ SIGN_OPTION_INDEX=$((RELATIVE_INDEX * 2 + 1))
+ SIGN_VALUE_INDEX=$((RELATIVE_INDEX * 2 + 2))
+ SIGN_OPTION="${!SIGN_OPTION_INDEX}"
+ if test -z "$SIGN_OPTION"; then
+  echo "Sign option is empty!"; exit $((30 + RELATIVE_INDEX + 1)); fi
+ case "$SIGN_OPTION" in
+  -k) if [ ! -z "$SIGN_KEYSTORE" ]; then
+    echo "Keystore is already set!"; exit $((50 + RELATIVE_INDEX + 1)); fi
+   SIGN_KEYSTORE="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_KEYSTORE"; then
+    echo "Keystore is empty!"; exit $((60 + RELATIVE_INDEX + 1))
+   elif [ ! -s "$SIGN_KEYSTORE" ]; then
+    echo "Keystore \"$SIGN_KEYSTORE\" does not exist!"; exit $((70 + RELATIVE_INDEX + 1))
+   fi;;
+  -i) if [ ! -z "$SIGN_ISSUER" ]; then
+    echo "Issuer is already set!"; exit $((80 + RELATIVE_INDEX + 1)); fi
+   SIGN_ISSUER="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_ISSUER"; then
+    echo "Issuer is empty!"; exit $((90 + RELATIVE_INDEX + 1))
+   elif [ ! -s "$SIGN_ISSUER" ]; then
+    echo "Issuer \"$SIGN_ISSUER\" does not exist!"; exit $((100 + RELATIVE_INDEX + 1))
+   fi;;
+  -t) if [ ! -z "$SIGN_TYPE" ]; then
+    echo "Type is already set!"; exit $((110 + RELATIVE_INDEX + 1)); fi
+   SIGN_TYPE="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_TYPE"; then
+    echo "Type is empty!"; exit $((120 + RELATIVE_INDEX + 1)); fi;;
+  -s) if [ ! -z "$SIGNATURE" ]; then
+    echo "Signature is already set!"; exit $((130 + RELATIVE_INDEX + 1)); fi
+   SIGNATURE="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGNATURE"; then
+    echo "Signature is empty!"; exit $((140 + RELATIVE_INDEX + 1)); fi;;
+  -p) if [ ! -z "$SIGN_PASSWORD" ]; then
+    echo "Password is already set!"; exit $((150 + RELATIVE_INDEX + 1)); fi
+   SIGN_PASSWORD="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_PASSWORD"; then
+    echo "Password is empty!"; exit $((160 + RELATIVE_INDEX + 1)); fi;;
+  -e) if [ ! -z "$SIGN_EXPIRES" ]; then
+    echo "Expires is already set!"; exit $((170 + RELATIVE_INDEX + 1)); fi
+   SIGN_EXPIRES="${!SIGN_VALUE_INDEX}"
+   if test -z "$SIGN_EXPIRES"; then
+    echo "Expires is empty!"; exit $((180 + RELATIVE_INDEX + 1)); fi;;
+  *) echo "Sign option \"$SIGN_OPTION\" is not supported!"; exit $((40 + RELATIVE_INDEX + 1));;
+ esac
+done
+
+if test -z "$SIGN_KEYSTORE"; then
+ echo "Keystore is empty!"; exit 21
+elif test -z "$SIGN_ISSUER"; then
+ echo "Issuer is empty!"; exit 22
+elif test -z "$SIGNATURE"; then
+ echo "Signature is empty!"; exit 23
+elif test -z "$SIGN_PASSWORD"; then
+ echo "Password is empty!"; exit 24
+fi
+
+SIGN_PASSWORD_ENCODED=${SIGN_PASSWORD//\"/\\\"}
+
+if test -z "$SIGN_TYPE"; then
+ SIGN_TYPE="$SIGN_TYPE_DEFAULT"
+else
+ case "$SIGN_TYPE" in
+  sign | verify) /bin/true;;
+  *) echo "Sign type \"$SIGN_TYPE\" is not supported!"; exit 13;;
+ esac
+fi
+
+if test -z "$SIGN_KEYSTORE_TYPE"; then
+ SIGN_KEYSTORE_TYPE="$SIGN_KEYSTORE_TYPE_DEFAULT"; fi
+case "$SIGN_KEYSTORE_TYPE" in
+ pkcs12)
+  OPENSSL_VERSION="$(openssl version)"
+  if [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 1.'* ]]; then
+   KEYSTORE_TYPE='pkcs12'
+  elif [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 3.'* ]]; then
+   KEYSTORE_TYPE='pkcs12 -legacy'
+  else
+   echo "Openssl version error!"; exit 19
+  fi;;
+ *) echo "Keystore type \"$SIGN_KEYSTORE_TYPE\" is not supported!"; exit 14;;
+esac
+
+if test -z "$SIGN_EXPIRES"; then
+ SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
+
+case "$SIGN_EXPIRES" in
+ check) openssl x509 -in <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin \"pass:$SIGN_PASSWORD_ENCODED\"" \
+   | openssl x509) -checkend 0; CODE=$?
+  if test $CODE -ne 0; then
+   echo "Check failed!"; exit 15; fi;;
+ nocheck) /bin/true;;
+ *) echo "Expires type \"$SIGN_EXPIRES\" is not supported!"; exit 16;;
+esac
+
+case "$SIGN_TYPE" in
+ sign)
+  if test -f "$SIGNATURE"; then
+   echo "Signature exists!"; exit 48; fi
+  openssl dgst -sha512 -sign <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts \
+     -passin \"pass:$SIGN_PASSWORD_ENCODED\" \
+     -passout \"pass:$SIGN_PASSWORD_ENCODED\"" \
+   ) -passin "pass:$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
+  if test $? -ne 0; then
+   echo "Signature \"$SIGN_ISSUER\" error!"; exit 251; fi;;
+ verify)
+  if [ ! -s "$SIGNATURE" ]; then
+   echo "Signature does not exist!"; exit 49; fi
+  openssl dgst -sha512 -verify <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin \"pass:$SIGN_PASSWORD_ENCODED\"" \
+     | openssl x509 -pubkey -noout
+   ) -signature "$SIGNATURE" "$SIGN_ISSUER"
+  if test $? -ne 0; then
+   echo "Verify \"$SIGN_ISSUER\" error!"; exit 252; fi;;
+ *) echo "Sign type \"$SIGN_TYPE\" is not supported!"; exit 14;;
+esac
