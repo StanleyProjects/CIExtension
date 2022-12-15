@@ -118,9 +118,20 @@ case "$SIGN_TYPE" in
  sign)
   if test -f "$SIGNATURE"; then
    echo "Signature exists!"; exit 48; fi
+  echo "openssl $KEYSTORE_TYPE..."
+  openssl $KEYSTORE_TYPE -in "$SIGN_KEYSTORE" -nocerts \
+   -passin "pass:$SIGN_PASSWORD" \
+   -passout "pass:$SIGN_PASSWORD" > /dev/null
+  echo "/bin/bash -c..."
+  /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts \
+   -passin \"pass:$SIGN_PASSWORD_ENCODED\" \
+   -passout \"pass:$SIGN_PASSWORD_ENCODED\"" > /dev/null
+  echo "dgst..."
   openssl dgst -sha512 -sign <(
-    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts -passin \"pass:$SIGN_PASSWORD_ENCODED\" -passout \"pass:$SIGN_PASSWORD_ENCODED\"" \
-   ) -passin pass:"$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts \
+     -passin \"pass:$SIGN_PASSWORD_ENCODED\" \
+     -passout \"pass:$SIGN_PASSWORD_ENCODED\"" \
+   ) -passin "pass:$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
   if test $? -ne 0; then
    echo "Signature \"$SIGN_ISSUER\" error!"; exit 251; fi;;
  verify)
