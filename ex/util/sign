@@ -103,7 +103,13 @@ if test -z "$SIGN_EXPIRES"; then
  SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
 
 case "$SIGN_EXPIRES" in
- check) openssl x509 -in <(
+ check)
+   echo "keystore type: $KEYSTORE_TYPE"
+   /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" > /tmp/ptox
+   cat /tmp/ptox
+   cat /tmp/ptox | openssl x509 > /tmp/x.crt
+   cat /tmp/x.crt
+  openssl x509 -in <(
    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" \
    | openssl x509) -checkend 0; CODE=$?
   if test $CODE -ne 0; then
