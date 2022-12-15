@@ -75,6 +75,8 @@ elif test -z "$SIGN_PASSWORD"; then
  echo "Password is empty!"; exit 24
 fi
 
+SIGN_PASSWORD_ENCODED=${SIGN_PASSWORD//\"/\\\"}
+
 if test -z "$SIGN_TYPE"; then
  SIGN_TYPE="$SIGN_TYPE_DEFAULT"
 else
@@ -103,14 +105,8 @@ if test -z "$SIGN_EXPIRES"; then
  SIGN_EXPIRES="$SIGN_EXPIRES_DEFAULT"; fi
 
 case "$SIGN_EXPIRES" in
- check)
-   echo "keystore type: $KEYSTORE_TYPE"
-   /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" > /tmp/ptox
-   cat /tmp/ptox
-   cat /tmp/ptox | openssl x509 > /tmp/x.crt
-   cat /tmp/x.crt
-  openssl x509 -in <(
-   /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" \
+ check) openssl x509 -in <(
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin \"pass:$SIGN_PASSWORD_ENCODED\"" \
    | openssl x509) -checkend 0; CODE=$?
   if test $CODE -ne 0; then
    echo "Check failed!"; exit 15; fi;;
@@ -123,7 +119,7 @@ case "$SIGN_TYPE" in
   if test -f "$SIGNATURE"; then
    echo "Signature exists!"; exit 48; fi
   openssl dgst -sha512 -sign <(
-    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts -passin 'pass:$SIGN_PASSWORD' -passout 'pass:$SIGN_PASSWORD'" \
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts -passin \"pass:$SIGN_PASSWORD_ENCODED\" -passout \"pass:$SIGN_PASSWORD_ENCODED\"" \
    ) -passin pass:"$SIGN_PASSWORD" -out "$SIGNATURE" "$SIGN_ISSUER"
   if test $? -ne 0; then
    echo "Signature \"$SIGN_ISSUER\" error!"; exit 251; fi;;
@@ -131,7 +127,7 @@ case "$SIGN_TYPE" in
   if [ ! -s "$SIGNATURE" ]; then
    echo "Signature does not exist!"; exit 49; fi
   openssl dgst -sha512 -verify <(
-    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin 'pass:$SIGN_PASSWORD'" \
+    /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nokeys -passin \"pass:$SIGN_PASSWORD_ENCODED\"" \
      | openssl x509 -pubkey -noout
    ) -signature "$SIGNATURE" "$SIGN_ISSUER"
   if test $? -ne 0; then
