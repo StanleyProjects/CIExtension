@@ -127,7 +127,7 @@ case "$SIGN_TYPE" in
    -passin \"pass:$SIGN_PASSWORD_ENCODED\" \
    -passout \"pass:$SIGN_PASSWORD_ENCODED\"" > /dev/null
   echo "dgst..."
-  openssl dgst -sha512 -sign <(
+  openssl dgst -legacy -sha512 -sign <(
     /bin/bash -c "openssl $KEYSTORE_TYPE -in '$SIGN_KEYSTORE' -nocerts \
      -passin \"pass:$SIGN_PASSWORD_ENCODED\" \
      -passout \"pass:$SIGN_PASSWORD_ENCODED\"" \
