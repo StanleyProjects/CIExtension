@@ -30,6 +30,9 @@ jobs:
            cp -r workdir/repository/ex/util workdir/ex/
       - name: Pull request merge
         working-directory: workdir
+        env:
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
           repository/ex/github/assemble/repository.sh
           export VCS_PAT
