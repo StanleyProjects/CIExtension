@@ -40,6 +40,8 @@ jobs:
           repository/ex/github/assemble/worker.sh
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
+          IMAGE_TAG="${REPOSITORY_OWNER}/${REPOSITORY_NAME}:${GITHUB_RUN_ID}"
+          echo "IMAGE_TAG=${IMAGE_TAG,,}" >> $GITHUB_ENV
       - name: Build image
         working-directory: workdir
         env:
@@ -53,7 +55,7 @@ jobs:
            --build-arg="REPOSITORY_NAME=$REPOSITORY_NAME" \
            --build-arg="GIT_BRANCH_SRC=${{github.event.pull_request.head.ref}}" \
            -f="internal/docker/prepare.docker" \
-           -t="${REPOSITORY_OWNER}-${REPOSITORY_NAME}-${GITHUB_RUN_ID}" .
+           -t="$IMAGE_TAG" .
       - name: Not implemented!
         run: echo "Not implemented!"; exit 1
       - working-directory: workdir
