@@ -1,0 +1,23 @@
+from kepocnhh/debian-amd64:3
+
+run mkdir -p /workdir/prepare/repository
+workdir /workdir/prepare/repository
+
+arg VCS_PAT
+arg REPOSITORY_OWNER
+arg REPOSITORY_NAME
+arg GIT_BRANCH_SRC
+
+run [ ! -z "$VCS_PAT" ]
+run [ ! -z "$REPOSITORY_OWNER" ]
+run [ ! -z "$REPOSITORY_NAME" ]
+run [ ! -z "$GIT_BRANCH_SRC" ]
+
+run git -C /workdir/prepare/repository init && \
+ git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git" && \
+ git fetch origin "$GIT_BRANCH_SRC" && \
+ git checkout "$GIT_BRANCH_SRC"
+
+workdir /workdir/prepare
+
+run mkdir ex; cp -r repository/ex/util ex/util
