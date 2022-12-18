@@ -1,4 +1,4 @@
-from kepocnhh/debian-amd64:3
+from kepocnhh/debian-amd64:4
 
 run mkdir -p /prepare/repository
 workdir /prepare/repository
