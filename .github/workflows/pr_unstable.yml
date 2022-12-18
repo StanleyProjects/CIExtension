@@ -33,12 +33,9 @@ jobs:
           REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
           REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
-          repository/ex/github/assemble/repository.sh
           export VCS_PAT
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          repository/ex/github/assemble/worker.sh
-          repository/ex/github/assemble/pr.sh
-          repository/ex/github/workflow/pr/merge.sh
+          repository/internal/shell/workflow/pull/request/prepare/merge.sh
           IMAGE_NAME="${REPOSITORY_OWNER}.${REPOSITORY_NAME}.pr.unstable"
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
       - name: Build image
