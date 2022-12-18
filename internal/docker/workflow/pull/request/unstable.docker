@@ -16,7 +16,7 @@ run [ ! -z "$GIT_BRANCH_SRC" ]
 run git init
 run git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
 run git fetch origin "$GIT_BRANCH_SRC"
-run git checkout "$GIT_BRANCH_SRC"
+run git checkout FETCH_HEAD
 
 workdir /workdir/prepare
 
