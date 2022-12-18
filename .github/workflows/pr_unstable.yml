@@ -64,73 +64,25 @@ jobs:
            -si .bot.continuousibot.id TELEGRAM_BOT_ID \
            -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
            -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
+          KEY_ALIAS='debug'
+          . ex/util/json --base64 "$(cat keystores.json.base64)" \
+           -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
+           -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
+          . ex/util/json --base64 "$(cat fingerprints.json.base64)" \
+           -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
           docker run --rm \
            -e VCS_PAT="$VCS_PAT" \
            -e PR_NUMBER="$PR_NUMBER" \
            -e TELEGRAM_BOT_ID="$TELEGRAM_BOT_ID" \
            -e TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
            -e TELEGRAM_CHAT_ID="$TELEGRAM_CHAT_ID" \
+           -e KEYSTORE="$KEYSTORE" \
+           -e KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" \
+           -e KEY_X509_SHA512="$KEY_X509_SHA512" \
            --name="container.${IMAGE_NAME}" "${IMAGE_NAME}:${GITHUB_RUN_ID}" \
            repository/internal/shell/workflow/pull/request/unstable.sh
       - name: Not implemented!
         run: echo "Not implemented!"; exit 1
-      - working-directory: workdir
-        run: |
-          mv prepare/repository repository
-          rm -rf prepare
-          cp -r repository/ex ex
-      - name: Set up pull request
-        working-directory: workdir
-        run: |
-          ex/github/assemble/repository.sh
-          ex/github/assemble/repository/owner.sh
-          ex/github/assemble/pr.sh
-          export VCS_PAT
-          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          ex/github/assemble/worker.sh
-          ex/github/assemble/pr/commit.sh
-          export CI_BUILD_ID=$GITHUB_RUN_ID
-          ex/github/assemble/actions/run.sh
-      - name: Check version
-        working-directory: workdir
-        run: |
-          . ex/util/export VCS_PAT TELEGRAM_BOT_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID
-          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          for it in $(cat repository/internal/env); do export $it; done
-          ex/util/require VERSION
-          . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
-           -si .bot.continuousibot.id TELEGRAM_BOT_ID \
-           -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
-           -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
-          ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
-      - name: Artifacts
-        working-directory: workdir
-        run: |
-          for it in $(cat repository/internal/env); do export $it; done
-          ex/util/require VERSION
-          mkdir -p assemble/project/artifact
-          ARTIFACT="CIExtension-${VERSION}-UNSTABLE.zip"
-          KEY_ALIAS='debug'
-          $(ISSUER="$(pwd)" && cd "$ISSUER" && zip -r9 "assemble/project/artifact/$ARTIFACT" ci ex > /dev/null)
-          . ex/util/json --base64 "${{secrets.KEYSTORES}}" \
-           -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
-           -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
-          echo "$KEYSTORE" | base64 -d > "assemble/project/${KEY_ALIAS}.pkcs12"
-          ex/util/sign -i "assemble/project/artifact/$ARTIFACT" -s "assemble/project/artifact/${ARTIFACT}.sig" \
-           -k "assemble/project/${KEY_ALIAS}.pkcs12" -p "$KEYSTORE_PASSWORD"
-          . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
-          ACTUAL_FINGERPRINT="$(openssl pkcs12 -legacy -in "assemble/project/${KEY_ALIAS}.pkcs12" \
-            -nokeys -passin "pass:$KEYSTORE_PASSWORD" | openssl x509 -noout -fingerprint -sha512)"
-          EXPECTED_FINGERPRINT="SHA512 Fingerprint=$KEY_X509_SHA512"
-          . ex/util/assert -eqv "${ACTUAL_FINGERPRINT^^}" "${EXPECTED_FINGERPRINT^^}"
-      - name: VCS push
-        working-directory: workdir
-        env:
-          PR_NUMBER: ${{github.event.pull_request.number}}
-        run: |
-          ex/github/workflow/pr/commit.sh
-          git -C repository push
-          ex/github/assemble/commit.sh
       - name: GitHub release
         working-directory: workdir
         run: |
