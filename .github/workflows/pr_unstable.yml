@@ -65,10 +65,10 @@ jobs:
            -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
            -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
           KEY_ALIAS='debug'
-          . ex/util/json --base64 "$(cat keystores.json.base64)" \
+          . ex/util/json --base64 "${{secrets.KEYSTORES}}" \
            -sfs ".${KEY_ALIAS}.base64" KEYSTORE \
            -sfs ".${KEY_ALIAS}.password" KEYSTORE_PASSWORD
-          . ex/util/json --base64 "$(cat fingerprints.json.base64)" \
+          . ex/util/json --base64 "${{secrets.FINGERPRINTS}}" \
            -sfs ".key.${KEY_ALIAS}.x509.sha512" KEY_X509_SHA512
           docker run --rm \
            -e VCS_PAT="$VCS_PAT" \
