@@ -1,7 +1,7 @@
 from kepocnhh/debian-amd64:3
 
-run mkdir -p /workdir/prepare/repository
-workdir /workdir/prepare/repository
+run mkdir -p /prepare/repository
+workdir /prepare/repository
 
 arg VCS_PAT
 arg REPOSITORY_OWNER
@@ -18,7 +18,7 @@ run git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${R
 run git fetch origin "$GIT_BRANCH_SRC"
 run git checkout FETCH_HEAD
 
-workdir /workdir/prepare
+workdir /prepare
 
 run mkdir ex
 run cp -r repository/ex/util ex/util
@@ -26,5 +26,13 @@ run cp -r repository/ex/util ex/util
 arg VCS_DOMAIN
 arg PR_NUMBER
 arg CI_BUILD_ID
+
+run repository/internal/shell/workflow/pull/request/prepare/merge.sh
+
+workdir /workdir
+
+run mv /prepare/repository repository
+run rm -rf /prepare
+run cp -r repository/ex ex
 
 run repository/internal/shell/workflow/pull/request/setup.sh
