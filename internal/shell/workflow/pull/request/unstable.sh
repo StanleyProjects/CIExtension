@@ -2,8 +2,8 @@
 
 echo 'Workflow pull request unstable'
 
-. ex/util/assert -s internal/env
-. internal/env
+. ex/util/assert -s repository/internal/env
+. repository/internal/env
 . ex/util/require VERSION
 
 ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
