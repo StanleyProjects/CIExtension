@@ -9,34 +9,71 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      VCS_DOMAIN: 'https://api.github.com'
+      PR_NUMBER: ${{github.event.pull_request.number}}
     steps:
       - name: Set up repository
-        run: |
-          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> "$GITHUB_ENV"
-          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> "$GITHUB_ENV"
-          mkdir -p workdir/prepare/repository
-      - working-directory: workdir/prepare/repository
         env:
-          GIT_BRANCH_SRC: ${{github.event.pull_request.head.ref}}
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
-          git init
           VCS_PAT="$(echo "${{secrets.VCS_TOKENS}}" | base64 -d | jq -Mcr .github.continuousi)"
-          git remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
-          git fetch origin "$GIT_BRANCH_SRC"
-          git checkout "$GIT_BRANCH_SRC"
+          mkdir -p workdir/repository
+          git -C workdir/repository init
+          git -C workdir/repository \
+           remote add origin "https://${VCS_PAT}@github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
+          git -C workdir/repository fetch origin "${{github.event.pull_request.head.ref}}"
+          git -C workdir/repository checkout FETCH_HEAD
+          mkdir workdir/ex
+          cp -r workdir/repository/ex/util workdir/ex/
       - name: Pull request merge
-        working-directory: workdir/prepare
+        working-directory: workdir
         env:
-          VCS_DOMAIN: 'https://api.github.com'
-          PR_NUMBER: ${{github.event.pull_request.number}}
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
-          mkdir ex; cp -r repository/ex/util ex/util
-          repository/ex/github/assemble/repository.sh
-          repository/ex/github/assemble/pr.sh
           export VCS_PAT
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
-          repository/ex/github/assemble/worker.sh
-          repository/ex/github/workflow/pr/merge.sh
+          repository/internal/shell/workflow/pull/request/prepare/merge.sh
+          IMAGE_NAME="${REPOSITORY_OWNER}.${REPOSITORY_NAME}.pr.unstable"
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
+      - name: Build image
+        working-directory: workdir
+        env:
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
+        run: |
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          docker build --no-cache \
+           --build-arg="VCS_PAT=$VCS_PAT" \
+           --build-arg="REPOSITORY_OWNER=$REPOSITORY_OWNER" \
+           --build-arg="REPOSITORY_NAME=$REPOSITORY_NAME" \
+           --build-arg="GIT_BRANCH_SRC=${{github.event.pull_request.head.ref}}" \
+           --build-arg="VCS_DOMAIN=$VCS_DOMAIN" \
+           --build-arg="PR_NUMBER=$PR_NUMBER" \
+           --build-arg="CI_BUILD_ID=$GITHUB_RUN_ID" \
+           -f='repository/internal/docker/workflow/pull/request/Dockerfile' \
+           -t="${IMAGE_NAME}:${GITHUB_RUN_ID}" .
+      - name: Run container
+        working-directory: workdir
+        run: |
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" \
+           -sfs .github.continuousi VCS_PAT
+          . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
+           -si .bot.continuousibot.id TELEGRAM_BOT_ID \
+           -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
+           -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
+          docker run --rm \
+           -e VCS_PAT="$VCS_PAT" \
+           -e PR_NUMBER="$PR_NUMBER" \
+           -e TELEGRAM_BOT_ID="$TELEGRAM_BOT_ID" \
+           -e TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
+           -e TELEGRAM_CHAT_ID="$TELEGRAM_CHAT_ID" \
+           --name="container.${IMAGE_NAME}" "${IMAGE_NAME}:${GITHUB_RUN_ID}" \
+           repository/internal/shell/workflow/pull/request/unstable.sh
+      - name: Not implemented!
+        run: echo "Not implemented!"; exit 1
       - working-directory: workdir
         run: |
           mv prepare/repository repository
@@ -44,9 +81,6 @@ jobs:
           cp -r repository/ex ex
       - name: Set up pull request
         working-directory: workdir
-        env:
-          VCS_DOMAIN: 'https://api.github.com'
-          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           ex/github/assemble/repository.sh
           ex/github/assemble/repository/owner.sh
@@ -59,9 +93,6 @@ jobs:
           ex/github/assemble/actions/run.sh
       - name: Check version
         working-directory: workdir
-        env:
-          VCS_DOMAIN: 'https://api.github.com'
-          PR_NUMBER: ${{github.event.pull_request.number}}
         run: |
           . ex/util/export VCS_PAT TELEGRAM_BOT_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
