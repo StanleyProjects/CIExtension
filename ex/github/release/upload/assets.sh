@@ -25,7 +25,8 @@ for ((ASSET_INDEX = 0; ASSET_INDEX<SIZE; ASSET_INDEX++)); do
   -sfs .path ASSET_PATH
  . ex/util/assert -s "$ASSET_PATH"
  echo "Upload asset [$((ASSET_INDEX + 1))/$SIZE] \"$ASSET_NAME\"..."
- OUTPUT="/tmp/$(date +%s)"
+ OUTPUT="/tmp/$(date +%s%N)"
+ rm "$OUTPUT"
  ex/util/url -u "${RELEASE_UPLOAD_URL}?name=${ASSET_NAME}&label=$ASSET_LABEL" \
   -o "$OUTPUT" \
   -h "Authorization: token $VCS_PAT" \

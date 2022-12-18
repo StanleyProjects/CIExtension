@@ -23,7 +23,8 @@ RELEASE_UPLOAD_URL="${RELEASE_UPLOAD_URL//\{?name,label\}/}"
 
 echo "Upload asset \"$ASSET_NAME\"..."
 
-OUTPUT="/tmp/$(date +%s)"
+OUTPUT="/tmp/$(date +%s%N)"
+rm "$OUTPUT"
 ex/util/url -u "${RELEASE_UPLOAD_URL}?name=${ASSET_NAME}&label=$ASSET_LABEL" \
  -o "$OUTPUT" \
  -h "Authorization: token $VCS_PAT" \
