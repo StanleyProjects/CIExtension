@@ -56,6 +56,7 @@ jobs:
            -f='repository/internal/docker/workflow/pull/request/Dockerfile' \
            -t="${IMAGE_NAME}:${GITHUB_RUN_ID}" .
       - name: Run container
+        working-directory: workdir
         run: |
           . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" \
            -sfs .github.continuousi VCS_PAT
