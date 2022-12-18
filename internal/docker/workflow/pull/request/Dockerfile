@@ -27,4 +27,4 @@ arg VCS_DOMAIN
 arg PR_NUMBER
 arg CI_BUILD_ID
 
-run repository/internal/shell/workflow/pull/request/unstable/setup.sh
+run repository/internal/shell/workflow/pull/request/setup.sh

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo 'Workflow pull request unstable setup'
+echo 'Workflow pull request setup'
 
 . ex/util/pipeline \
  repository/ex/github/assemble/repository.sh \
