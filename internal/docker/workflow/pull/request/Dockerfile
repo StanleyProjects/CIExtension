@@ -27,6 +27,10 @@ arg VCS_DOMAIN
 arg PR_NUMBER
 arg CI_BUILD_ID
 
+run [ ! -z "$VCS_DOMAIN" ]
+run [ ! -z "$PR_NUMBER" ]
+run [ ! -z "$CI_BUILD_ID" ]
+
 run repository/internal/shell/workflow/pull/request/prepare/merge.sh
 
 workdir /workdir
