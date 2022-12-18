@@ -36,11 +36,11 @@ for it in \
  "CIExtension-${TAG}.zip" \
  "CIExtension-${TAG}.zip.sig"; do
  ASSET="{}"
- . ex/util/jq/merge ASSET \
+ . ex/util/json_merge ASSET \
   ".name=\"$it\"" \
   ".label=\"$it\"" \
   ".path=\"assemble/project/artifact/$it\""
- . ex/util/jq/merge ASSETS ".+=[$ASSET]"
+ . ex/util/json_merge ASSETS ".+=[$ASSET]"
 done
 
 ex/github/release/upload/assets.sh "$ASSETS" \
