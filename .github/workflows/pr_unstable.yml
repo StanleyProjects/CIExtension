@@ -41,7 +41,9 @@ jobs:
           repository/ex/github/assemble/pr.sh
           repository/ex/github/workflow/pr/merge.sh
           IMAGE_TAG="${REPOSITORY_OWNER}/${REPOSITORY_NAME}:${GITHUB_RUN_ID}"
+          CONTAINER="${REPOSITORY_OWNER}_${REPOSITORY_NAME}_${GITHUB_RUN_ID}"
           echo "IMAGE_TAG=${IMAGE_TAG,,}" >> $GITHUB_ENV
+          echo "CONTAINER=${CONTAINER,,}" >> $GITHUB_ENV
       - name: Build image
         working-directory: workdir
         env:
@@ -56,6 +58,27 @@ jobs:
            --build-arg="GIT_BRANCH_SRC=${{github.event.pull_request.head.ref}}" \
            -f="repository/internal/docker/prepare.docker" \
            -t="$IMAGE_TAG" .
+      - name: Run container
+        run: docker run -t -d -e "VCS_DOMAIN=$VCS_DOMAIN" --name="$CONTAINER" "$IMAGE_TAG"
+      - name: Set up pull request
+        env:
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
+        run: |
+          docker exec "$CONTAINER" \
+           -e "REPOSITORY_OWNER=$REPOSITORY_OWNER" \
+           -e "REPOSITORY_NAME=$REPOSITORY_NAME" \
+           repository/ex/github/assemble/repository.sh
+          docker exec "$CONTAINER" repository/ex/github/assemble/repository/owner.sh
+          docker exec "$CONTAINER" repository/ex/github/assemble/pr.sh
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          docker exec "$CONTAINER" \
+           -e "VCS_PAT=$VCS_PAT" \
+           repository/ex/github/assemble/worker.sh
+          docker exec "$CONTAINER" repository/ex/github/assemble/pr/commit.sh
+          docker exec "$CONTAINER" \
+           -e "CI_BUILD_ID=$GITHUB_RUN_ID" \
+           repository/ex/github/assemble/actions/run.sh
       - name: Not implemented!
         run: echo "Not implemented!"; exit 1
       - working-directory: workdir
