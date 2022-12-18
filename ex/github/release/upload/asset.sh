@@ -19,6 +19,8 @@ RELEASE_UPLOAD_URL="${RELEASE_UPLOAD_URL//\{?name,label\}/}"
  -sfs .label ASSET_LABEL \
  -sfs .path ASSET_PATH
 
+. ex/util/assert -s "$ASSET_PATH"
+
 echo "Upload asset \"$ASSET_NAME\"..."
 
 OUTPUT="/tmp/$(date +%s)"
