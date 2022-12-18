@@ -22,3 +22,5 @@ workdir /workdir/prepare
 
 run mkdir ex
 run cp -r repository/ex/util ex/util
+
+run repository/internal/shell/workflow/pull/request/unstable/setup.sh
