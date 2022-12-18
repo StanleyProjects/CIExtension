@@ -6,6 +6,9 @@ echo 'Workflow pull request unstable'
 . repository/internal/env
 . ex/util/require VERSION
 
-ex/github/workflow/tag/test.sh "${VERSION}-UNSTABLE"
+TAG="${VERSION}-UNSTABLE"
 
-echo 'Not implemented!'; exit 3 # todo
+ex/github/workflow/tag/test.sh "$TAG" || exit 1 # todo
+repository/internal/shell/workflow/artifacts.sh "$TAG" || exit 2 # todo
+
+echo 'Not implemented!'; exit 9 # todo

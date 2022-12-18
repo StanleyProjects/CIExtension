@@ -89,15 +89,7 @@ fi
 if test -z "$SIGN_KEYSTORE_TYPE"; then
  SIGN_KEYSTORE_TYPE="$SIGN_KEYSTORE_TYPE_DEFAULT"; fi
 case "$SIGN_KEYSTORE_TYPE" in
- pkcs12)
-  OPENSSL_VERSION="$(openssl version)"
-  if [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 1.'* ]]; then
-   KEYSTORE_TYPE='pkcs12'
-  elif [[ "$OPENSSL_VERSION" =~ ^'OpenSSL 3.'* ]]; then
-   KEYSTORE_TYPE='pkcs12 -legacy'
-  else
-   echo "Openssl version error!"; exit 19
-  fi;;
+ pkcs12) KEYSTORE_TYPE='pkcs12';;
  *) echo "Keystore type \"$SIGN_KEYSTORE_TYPE\" is not supported!"; exit 14;;
 esac
 
