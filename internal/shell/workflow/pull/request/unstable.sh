@@ -8,7 +8,9 @@ echo 'Workflow pull request unstable'
 
 TAG="${VERSION}-UNSTABLE"
 
-ex/github/workflow/tag/test.sh "$TAG" || exit 1 # todo
-repository/internal/shell/workflow/artifacts.sh "$TAG" || exit 2 # todo
+ex/github/workflow/tag/test.sh "$TAG" \
+ && repository/internal/shell/workflow/artifacts.sh "$TAG" \
+ && repository/internal/shell/workflow/pull/request/push.sh \
+ || . ex/util/throw 21 'Illegal state!'
 
 echo 'Not implemented!'; exit 9 # todo
