@@ -19,7 +19,7 @@ BODY="{}"
 
 ex/util/url -u "$REPOSITORY_URL/issues/$PR_NUMBER/comments" \
  -x POST \
- -o "/tmp/$(date +%s)" \
+ -o "/tmp/$(date +%s%N)" \
  -h "Authorization: token $VCS_PAT" \
  -d "$BODY" \
  -e 201 \
