@@ -5,14 +5,13 @@ echo "GitHub assemble pull request commit..."
 . ex/util/json -f assemble/vcs/repository.json \
  -sfs .url REPOSITORY_URL
 
-. ex/util/require PR_NUMBER
+. ex/util/require VCS_DOMAIN PR_NUMBER
 
 . ex/util/json -f assemble/vcs/pr${PR_NUMBER}.json \
  -sfs .head.sha GIT_COMMIT_SRC \
  -sfs .base.sha GIT_COMMIT_DST
 
-mkdir -p assemble/vcs/commit \
- || . ex/util/throw 11 "Illegal state!"
+. ex/util/mkdirs assemble/vcs/commit
 
 ex/util/url -u "$REPOSITORY_URL/commits/$GIT_COMMIT_SRC" \
  -o assemble/vcs/commit.src.json \
