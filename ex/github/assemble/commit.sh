@@ -2,7 +2,11 @@
 
 echo "Assemble GitHub commit..."
 
-GIT_COMMIT_SHA="$(git -C repository rev-parse HEAD)" \
+REPOSITORY='repository'
+
+. ex/util/assert -d "$REPOSITORY"
+
+GIT_COMMIT_SHA="$(git -C "$REPOSITORY" rev-parse HEAD)" \
  || . ex/util/throw 11 "Get commit SHA error!"
 
 . ex/util/json -f assemble/vcs/repository.json \
