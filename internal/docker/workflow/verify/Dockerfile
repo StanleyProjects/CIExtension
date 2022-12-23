@@ -33,5 +33,7 @@ run [ ! -z "$TELEGRAM_CHAT_ID" ]
 
 run repository/internal/shell/workflow/verify/setup.sh
 
+workdir /workdir/repository
+
 cmd /usr/local/bin/run_docker_daemon.sh \
- && repository/internal/shell/workflow/verify.sh
+ && internal/shell/workflow/verify.sh
