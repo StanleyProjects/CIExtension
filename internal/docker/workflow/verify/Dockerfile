@@ -1,4 +1,4 @@
-from kepocnhh/debian-amd64:4
+from kepocnhh/docker-amd64:2
 
 run mkdir -p /workdir/repository
 workdir /workdir/repository
