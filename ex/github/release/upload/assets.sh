@@ -9,14 +9,14 @@ ASSETS="$1"
 
 . ex/util/require ASSETS VCS_PAT
 
-SELECT_FILLED_ARRAY="select((type==\"array\")and(.!=[]))"
-
 . ex/util/json -f assemble/github/release.json \
  -sfs .upload_url RELEASE_UPLOAD_URL
 
 RELEASE_UPLOAD_URL="${RELEASE_UPLOAD_URL//\{?name,label\}/}"
 
-SIZE=$(echo "$ASSETS" | jq -Mcer "$SELECT_FILLED_ARRAY|length") || exit 1 # todo
+SIZE=$(echo "$ASSETS" | jq -Mcer 'length') \
+ || . ex/util/throw 101 'Illegal state!'
+[ $SIZE -lt 1 ] && . ex/util/throw 102 'Illegal size!'
 for ((ASSET_INDEX = 0; ASSET_INDEX<SIZE; ASSET_INDEX++)); do
  ASSET="$(echo "$ASSETS" | jq -Mc ".[$ASSET_INDEX]")"
  . ex/util/json -j "$ASSET" \

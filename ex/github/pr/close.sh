@@ -1,10 +1,10 @@
 #!/bin/bash
 
-echo "GitHub pull request close..."
+echo 'GitHub pull request close...'
 
 . ex/util/require VCS_PAT PR_NUMBER
 
-BODY="{}"
+BODY='{}'
 . ex/util/json_merge -v BODY '.state="close"'
 
 . ex/util/json -f assemble/vcs/repository.json \

@@ -8,5 +8,5 @@ for ((EXPORT_INDEX=1; EXPORT_INDEX<=$#; EXPORT_INDEX++)); do
  EXPORT_VARIABLE="${!EXPORT_INDEX}"
  if test -z "$EXPORT_VARIABLE"; then
   echo "Variable name is empty!"; exit $((100+EXPORT_INDEX)); fi
- export "$EXPORT_VARIABLE"
+ export "$EXPORT_VARIABLE" || exit $((120+EXPORT_INDEX))
 done
