@@ -11,6 +11,6 @@ copy ex/github/assemble/worker.sh ex/github/assemble/worker.sh
 copy ex/notification/telegram/send_message.sh ex/notification/telegram/send_message.sh
 copy ex/github/assemble/pr.sh ex/github/assemble/pr.sh
 copy ex/github/workflow/tag/test/on_failed.sh ex/github/workflow/tag/test/on_failed.sh
-copy internal/check/github/workflow/tag/test/on_failed/check.sh .
+copy internal/check/ex/github/workflow/tag/test/on_failed/check.sh .
 
 cmd ./check.sh

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/github/workflow/pr/commit'
+RELATIVE_PATH='internal/check/ex/github/workflow/pr/check_state'
 DOCKERFILE="$RELATIVE_PATH/Dockerfile"
 NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"
-VERSION=$(date +%s)
+VERSION=$(date +"%Y%m%d%H")
 TAG="$NAME:$VERSION"
 CONTAINER="container.$NAME"
 
