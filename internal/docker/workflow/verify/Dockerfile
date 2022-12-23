@@ -18,6 +18,9 @@ run git checkout FETCH_HEAD
 
 workdir /workdir
 
+run mkdir ex
+run cp -r repository/ex/util ex/
+
 arg VCS_PAT
 arg TELEGRAM_BOT_ID
 arg TELEGRAM_BOT_TOKEN
