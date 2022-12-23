@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/github/assemble/commit'
+RELATIVE_PATH='internal/check/ex/github/assemble/repository/pages'
 DOCKERFILE="$RELATIVE_PATH/Dockerfile"
 NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"
@@ -13,7 +13,9 @@ docker rm "$CONTAINER"
 
 CODE=0
 docker build --no-cache -f="$DOCKERFILE" -t="$TAG" . \
- && docker run --rm --name="$CONTAINER" "$TAG"; CODE=$?
+ && docker run --rm \
+  --env-file "$RELATIVE_PATH/env" \
+  --name="$CONTAINER" "$TAG"; CODE=$?
 
 if test $CODE -ne 0; then
  echo "Build error!"

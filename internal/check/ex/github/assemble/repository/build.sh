@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKERFILE="internal/check/github/assemble/repository/Dockerfile"
+DOCKERFILE="internal/check/ex/github/assemble/repository/Dockerfile"
 NAME="$(md5sum <<< "$DOCKERFILE" | base64)"
 NAME="${NAME,,}"
 VERSION=$(date +%s)

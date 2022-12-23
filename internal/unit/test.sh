@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PREFIXES=(
-ex/github/assemble/actions
+ex/github/assemble
 )
 PREFIXES_SIZE=${#PREFIXES[@]}
 if [[ $PREFIXES_SIZE < 1 ]]; then
