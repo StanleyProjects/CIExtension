@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PREFIXES=(
-ex/notification
+ex/github/assemble/actions
 )
 PREFIXES_SIZE=${#PREFIXES[@]}
 if [[ $PREFIXES_SIZE < 1 ]]; then
@@ -14,11 +14,6 @@ for ((PREFIX_INDEX=0; PREFIX_INDEX<$PREFIXES_SIZE; PREFIX_INDEX++)); do
   echo "Scripts size error!"; exit 12; fi
  for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SCRIPTS_SIZE; SCRIPT_INDEX++)); do
   SCRIPT="${SCRIPTS[$SCRIPT_INDEX]}"
-  echo "
-  [$PREFIX_INDEX/$SCRIPT_INDEX]
-  prefix: $PREFIX
-  script: $SCRIPT
-  "
   if [[ ! "$SCRIPT" =~ ^$PREFIX/ ]]; then
    echo "Script format error!"; exit $((20 + SCRIPT_INDEX + 1)); fi
   RELATIVE="$SCRIPT"
