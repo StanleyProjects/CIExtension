@@ -8,6 +8,6 @@ workdir /home/$USER
 user $USER
 
 copy ex/util/mkdirs ex/util/mkdirs
-copy internal/check/util/mkdirs/check.sh .
+copy internal/check/ex/util/mkdirs/check.sh .
 
 cmd ./check.sh

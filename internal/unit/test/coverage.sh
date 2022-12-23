@@ -9,8 +9,7 @@ for ((SCRIPT_INDEX=0; SCRIPT_INDEX<$SIZE; SCRIPT_INDEX++)); do
  SCRIPT="${SCRIPTS[$SCRIPT_INDEX]}"
  if [[ ! "$SCRIPT" =~ ^$PREFIX/ ]]; then
   echo "Script format error!"; exit $((20 + SCRIPT_INDEX + 1)); fi
- RELATIVE="${SCRIPT/$PREFIX\//}"
- EXPRESSION="\.sh$"
+ RELATIVE="$SCRIPT"
  [[ "$RELATIVE" =~ .sh$ ]] && RELATIVE="${RELATIVE/.sh/}"
  if [ -s "internal/check/$RELATIVE/build.sh" ] \
   && [ -s "internal/check/$RELATIVE/check.sh" ] \

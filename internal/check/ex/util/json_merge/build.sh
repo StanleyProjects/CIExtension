@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/util/throw'
+RELATIVE_PATH='internal/check/ex/util/json_merge'
 DOCKERFILE="$RELATIVE_PATH/Dockerfile"
 NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"

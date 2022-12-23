@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/util/pipeline'
+RELATIVE_PATH='internal/check/ex/util/export'
 DOCKERFILE="$RELATIVE_PATH/Dockerfile"
 NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"
@@ -11,14 +11,15 @@ CONTAINER="container.$NAME"
 docker stop "$CONTAINER"
 docker rm "$CONTAINER"
 
-CODE=0
-docker build --no-cache -f="$DOCKERFILE" -t="$TAG" . \
- && docker run --rm --name="$CONTAINER" "$TAG"; CODE=$?
+docker build --no-cache -f="$DOCKERFILE" -t="$TAG" .
 
-if test $CODE -ne 0; then
- echo "Build error!"
- exit 21
-fi
+if test $? -ne 0; then
+ echo 'Build error!'; exit 21; fi
+
+docker run --rm --name="$CONTAINER" "$TAG"
+
+if test $? -ne 0; then
+ echo 'Run error!'; exit 21; fi
 
 docker rmi "$TAG"
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKERFILE="internal/check/util/mkdirs/Dockerfile"
+DOCKERFILE="internal/check/ex/util/mkdirs/Dockerfile"
 NAME="$(md5sum <<< "$DOCKERFILE" | base64)"
 NAME="${NAME,,}"
 VERSION=$(date +%s)

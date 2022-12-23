@@ -1,8 +1,7 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/util/require'
-DOCKERFILE="$RELATIVE_PATH/Dockerfile"
-NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
+DOCKERFILE="internal/check/ex/util/url/Dockerfile"
+NAME="$(md5sum <<< "$DOCKERFILE" | base64)"
 NAME="${NAME,,}"
 VERSION=$(date +"%Y%m%d%H")
 TAG="$NAME:$VERSION"
