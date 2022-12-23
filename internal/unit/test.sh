@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PREFIXES=(
-ex/util
+ex/notification
 )
 PREFIXES_SIZE=${#PREFIXES[@]}
 if [[ $PREFIXES_SIZE < 1 ]]; then
