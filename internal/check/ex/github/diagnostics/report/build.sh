@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RELATIVE_PATH='internal/check/github/diagnostics/report'
+RELATIVE_PATH='internal/check/ex/github/diagnostics/report'
 DOCKERFILE="$RELATIVE_PATH/Dockerfile"
 NAME="$(md5sum <<< "$RELATIVE_PATH" | base64)"
 NAME="${NAME,,}"
