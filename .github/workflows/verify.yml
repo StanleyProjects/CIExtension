@@ -10,51 +10,44 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - run: |
-          echo "REPOSITORY_OWNER=${{github.event.repository.owner.login}}" >> $GITHUB_ENV
-          echo "REPOSITORY_NAME=${{github.event.repository.name}}" >> $GITHUB_ENV
-          mkdir -p repository
-      - working-directory: repository
-        run: |
-          git init
-          git remote add origin https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
-          git fetch --depth=1 origin "${{github.event.inputs.git_source}}"
-          git checkout FETCH_HEAD
-      - working-directory: repository
+      - name: Set up repository
         env:
-          VCS_TOKENS: ${{secrets.VCS_TOKENS}}
-          TELEGRAM: ${{secrets.TELEGRAM}}
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
-          for it in \
-           internal/check/github/assemble/repository/pages \
-           internal/check/github/assemble/worker \
-           internal/check/github/diagnostics/report \
-           internal/check/github/release; do \
-           echo "CHECK_VCS_PAT=$(echo "$VCS_TOKENS" | base64 -d | jq -Mer .github.continuousi)" >> "$it/env" || exit 1; done
-          for it in \
-           internal/check/notification/telegram/send_message \
-           internal/check/notification/telegram/send_file; do \
-           echo "CHECK_TELEGRAM_BOT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)" >> "$it/env" && \
-           echo "CHECK_TELEGRAM_BOT_TOKEN=$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)" >> "$it/env" && \
-           echo "CHECK_TELEGRAM_CHAT_ID=$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)" >> "$it/env" || exit 1; done
-      - working-directory: repository
-        run: |
-          internal/unit/test/coverage.sh
-          internal/unit/test.sh
-      - working-directory: repository
+          mkdir -p workdir/repository
+          git -C workdir/repository init
+          git -C workdir/repository \
+           remote add origin "https://github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}.git"
+          git -C workdir/repository fetch origin "${{github.event.pull_request.head.ref}}"
+          git -C workdir/repository checkout FETCH_HEAD
+          mkdir workdir/ex
+          cp -r workdir/repository/ex/util workdir/ex/
+          IMAGE_NAME="${REPOSITORY_OWNER}.${REPOSITORY_NAME}.verify"
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
+      - name: Build image
+        working-directory: workdir
         env:
-          VCS_DOMAIN: 'https://api.github.com'
+          REPOSITORY_OWNER: ${{github.event.repository.owner.login}}
+          REPOSITORY_NAME: ${{github.event.repository.name}}
         run: |
-          export CI_BUILD_ID="$GITHUB_RUN_ID"; \
-          ex/github/assemble/actions/run.sh
-      - working-directory: repository
-        env:
-          TELEGRAM: ${{secrets.TELEGRAM}}
-        run: |
-          export TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.id)"; \
-          export TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mer .bot.continuousibot.token)"; \
-          export TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mer .chat.kepocnhh.id)"; \
-          ex/notification/telegram/send_message.sh \
-           "CI build [#$(jq .run_number assemble/vcs/actions/run.json)]($(jq -r .html_url assemble/vcs/actions/run.json)) success."
+          . ex/util/json --base64 "${{secrets.VCS_TOKENS}}" -sfs .github.continuousi VCS_PAT
+          . ex/util/json --base64 "${{secrets.TELEGRAM}}" \
+           -si .bot.continuousibot.id TELEGRAM_BOT_ID \
+           -sfs .bot.continuousibot.token TELEGRAM_BOT_TOKEN \
+           -si .chat.kepocnhh.id TELEGRAM_CHAT_ID
+          docker build --no-cache \
+           --build-arg="REPOSITORY_OWNER=$REPOSITORY_OWNER" \
+           --build-arg="REPOSITORY_NAME=$REPOSITORY_NAME" \
+           --build-arg="GIT_BRANCH_SRC=${{github.event.inputs.git_source}}" \
+           --build-arg="VCS_PAT=$VCS_PAT" \
+           --build-arg="TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" \
+           --build-arg="TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" \
+           --build-arg="TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" \
+           -f='repository/internal/docker/workflow/verify/Dockerfile' \
+           -t="${IMAGE_NAME}:${GITHUB_RUN_ID}" .
+      - name: Run container
+        working-directory: workdir
+        run: docker run --rm --privileged --name="container.${IMAGE_NAME}" "${IMAGE_NAME}:${GITHUB_RUN_ID}"

@@ -1,7 +1,9 @@
 #!/bin/bash
 
 PREFIXES=(
-ex/kotlin
+ ci
+ ex
+ internal/shell
 )
 PREFIXES_SIZE=${#PREFIXES[@]}
 if [[ $PREFIXES_SIZE < 1 ]]; then
