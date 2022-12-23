@@ -12,7 +12,8 @@ ENVS=(
 )
 for it in "${ENVS[@]}"; do \
  . ex/util/assert -d "repository/internal/check/ex/$it"
- echo "CHECK_VCS_PAT=$VCS_PAT" >> "$it/env" \
+ ISSUE="repository/internal/check/ex/$it/env"
+ echo "CHECK_VCS_PAT=$VCS_PAT" >> "$ISSUE" \
  || . ex/util/throw 11 "Script \"$it\" error!"; done
 
 TELEGRAMS=(
@@ -21,7 +22,8 @@ TELEGRAMS=(
 )
 for it in "${TELEGRAMS[@]}"; do \
  . ex/util/assert -d "repository/internal/check/ex/$it"
- echo "CHECK_TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> "$it/env" && \
- echo "CHECK_TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> "$it/env" && \
- echo "CHECK_TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> "$it/env" \
+ ISSUE="repository/internal/check/ex/$it/env"
+ echo "CHECK_TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> "$ISSUE" && \
+ echo "CHECK_TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> "$ISSUE" && \
+ echo "CHECK_TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> "$ISSUE" \
  || . ex/util/throw 12 "Script \"$it\" error!"; done
