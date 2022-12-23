@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PREFIXES=(
-ex/github/pr
+ex/github/tag
 )
 PREFIXES_SIZE=${#PREFIXES[@]}
 if [[ $PREFIXES_SIZE < 1 ]]; then
